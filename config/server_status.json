@@ -1,0 +1,21 @@
+{
+    "version": {
+        "name": "1.12.2",
+        "protocol": 340
+    },
+    "players": {
+        "max": -7,
+        "online": 1000,
+        "sample": [
+            {
+                "name": "DmytroFrame",
+                "id": "4566e69f-c907-48ee-8d71-d7ba5aa00d20"
+            }
+        ]
+    },
+    "description": {
+        "text": "\tЕбати тебе в\n\t\tжопу!"
+    },
+    "favicon": "data:image/png;base64,<data>",
+    "previewsChat": false
+}
