@@ -2,7 +2,7 @@
 ## This - test server
 
 ### Needed for work
- * Rust compiler with cargo ^1.62
+ * Rust compiler v1.63.^ with cargo
 
 
 ## Running the app
