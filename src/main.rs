@@ -1,23 +1,3 @@
-// mod config;
-
-// use std::{fs::File, io::Read};
-// use serde::De&serializ&&&e;
-
-// #[derive(Deserialize)]
-// struct User {
-//     server_port: u16,
-// }
-
-// use std::net::TcpListener;
-
-// fn main() {
-
-// let ser = config::read();
-// println!("{:?}", f64::MAX.to_string().len());
-
-// }
-
-// use std::fs::File;
 use std::io::prelude::*;
 use std::net::{TcpListener, TcpStream};
 use std::thread;
@@ -43,7 +23,7 @@ fn main() -> std::io::Result<()> {
     for stream in listener.incoming() {
         thread::spawn(move || {
             handle_client(stream.expect("#########Хуйня на треді!########"));
-            // println!("END {:?}", thread::current().id())
+            println!("END {:?}", thread::current().id())
         });
     }
     Ok(())
@@ -57,14 +37,14 @@ fn handle_client(mut stream: TcpStream) {
 
     if id == 122 && size > 200 {
         stream.flush().unwrap();
-        // println!("Fuck final {}", id);
+        println!("Fuck final {}", id);
         return;
     }
 
     network_handle(&stream, id, size);
 
     stream.flush().unwrap();
-    // println!("final {}", id);
+    println!("final {}", id);
 }
 
 fn read_byte(mut stream: &TcpStream) -> u8 {
@@ -109,9 +89,17 @@ fn read_unsigned_short(stream: &TcpStream) -> u16 {
 }
 
 fn read_double(stream: &TcpStream) -> f64 {
-    f64::from_be_bytes([read_byte(stream), read_byte(stream), read_byte(stream), read_byte(stream), read_byte(stream), read_byte(stream), read_byte(stream), read_byte(stream)])
+    f64::from_be_bytes([
+        read_byte(stream),
+        read_byte(stream),
+        read_byte(stream),
+        read_byte(stream),
+        read_byte(stream),
+        read_byte(stream),
+        read_byte(stream),
+        read_byte(stream),
+    ])
 }
-
 
 fn unsigned_right_shift(value: i32, n: i32) -> u32 {
     let value_as_u32: u32 = {
@@ -156,8 +144,10 @@ fn detect_new_level(stream: &TcpStream, z: f64) {
     unsafe {
         // println!("\nIS WORK\n {}",  (NEW_LEVEL_COUNTER * 16) + 3);
         if z > (3 + (NEW_LEVEL_COUNTER * 16)) as f64 {
+            // println!("\n#####LOAD, Chunk {}\n", NEW_LEVEL_COUNTER);
             NEW_LEVEL_COUNTER += 1;
             write_bytes(stream, create_level_2(0, NEW_LEVEL_COUNTER));
+            // println!("next level {}", (3 + (NEW_LEVEL_COUNTER * 16)));
         }
     }
 }
@@ -167,31 +157,35 @@ static mut OLD_LEVEL_COUNTER: i32 = 1;
 fn detect_old_level(stream: &TcpStream, z: f64) {
     unsafe {
         // println!("\nIS WORK\n {}",  (NEW_LEVEL_COUNTER * 16) + 3);
-        if z > (12 + (OLD_LEVEL_COUNTER * 16)) as f64 {
-            // println!("\n#####UNLOAD, Chunk {}\n", OLD_LEVEL_COUNTER -2);
+        if z > (11 + (OLD_LEVEL_COUNTER * 16)) as f64 {
+            // println!("\n#####UNLOAD, Chunk {}\n", OLD_LEVEL_COUNTER - 2);
             OLD_LEVEL_COUNTER += 1;
-            write_bytes(stream, create_level_empty(0, OLD_LEVEL_COUNTER -2));
-            write_bytes(stream, create_unload_chunk(0, OLD_LEVEL_COUNTER -2));
+            // write_bytes(stream, create_level_empty(0, OLD_LEVEL_COUNTER - 2));
+            write_bytes(stream, create_unload_chunk(0, OLD_LEVEL_COUNTER - 2));
+            // println!("next level {}", (11 + (OLD_LEVEL_COUNTER * 16)) );
         }
     }
 }
-
 
 fn skip_lisen(mut stream: &TcpStream) {
     let size = read_int(stream);
     let id = read_int(stream) as u8;
     // println!("SKIP size: {} with id: {} OR hexId: 0x{:X}", size, id, id);
     match id {
-
         20 => {
             let x = read_double(stream);
             let y = read_double(stream);
-            let z =  read_double(stream);
-            let on_ground = {if read_byte(stream) == 1 {true} else {false}};
+            let z = read_double(stream);
+            let on_ground = {
+                if read_byte(stream) == 1 {
+                    true
+                } else {
+                    false
+                }
+            };
             // print!(" Position\tX: {}\tFeet Y: {},\tZ: {}\tOn Ground: {}\n", x, y, z, on_ground);
 
-
-            if on_ground || true {
+            if on_ground {
                 detect_new_level(stream, z);
                 detect_old_level(stream, z);
             }
@@ -199,15 +193,24 @@ fn skip_lisen(mut stream: &TcpStream) {
             if y < -100.0 {
                 write_bytes(stream, set_health(0.0, 20, 0.0));
                 thread::sleep_ms(1000);
-                unsafe { if OLD_LEVEL_COUNTER > MAX_SCORE {MAX_SCORE = OLD_LEVEL_COUNTER}};
-                write_bytes(stream, create_message("Ти програв, твій рівень: ".to_owned() + unsafe {&OLD_LEVEL_COUNTER.to_string()}));
+                unsafe {
+                    if OLD_LEVEL_COUNTER -1 > MAX_SCORE {
+                        MAX_SCORE = OLD_LEVEL_COUNTER -1;
+                    }
+                };
+                write_bytes(
+                    stream,
+                    create_message(
+                        "Ти програв, твій рівень: ".to_owned()
+                            + unsafe { &(OLD_LEVEL_COUNTER -1).to_string() },
+                    ),
+                );
                 stream.flush().unwrap();
                 panic!();
             }
 
-
             let mut chunk_x = x.round() as i32 / 16;
-            let mut chunk_z = (z.round() as i32 +5) / 16;
+            let mut chunk_z = (z.round() as i32 + 5) / 16;
             if x < 0.0 {
                 chunk_x -= 1;
             }
@@ -222,7 +225,7 @@ fn skip_lisen(mut stream: &TcpStream) {
             // write_bytes(stream, create_level((x.round() as i32 / 16)  +1, (z.round() as i32 / 16) +1));
             // write_bytes(stream, create_level((x.round() as i32 / 16) -1, (z.round() as i32 / 16) -1));
         }
-        
+
         // 5 => {
         //     println!("Player send to chat: {}", read_string(stream));
         //     loop {
@@ -230,8 +233,6 @@ fn skip_lisen(mut stream: &TcpStream) {
         //         println!("SKIP {}", _read);
         //     }
         // }
-        
-        
         _ => {
             for _ in 1..size {
                 let _read = read_byte(stream);
@@ -242,12 +243,12 @@ fn skip_lisen(mut stream: &TcpStream) {
 }
 
 fn network_handle(mut stream: &TcpStream, id: i32, size: i32) {
-    // println!(
-    //     "{:?}, Id packege: {}, size: {}",
-    //     thread::current().id(),
-    //     id,
-    //     size
-    // );
+    println!(
+        "{:?}, Id packege: {}, size: {}",
+        thread::current().id(),
+        id,
+        size
+    );
 
     // println!();
 
@@ -257,10 +258,10 @@ fn network_handle(mut stream: &TcpStream, id: i32, size: i32) {
             let adderss = read_string(&stream);
             let port = read_unsigned_short(&stream);
             let status = read_int(stream);
-            // println!(
-            //     "CONNECT INFO: {} {} {} {}",
-            //     protocol_version, adderss, port, status
-            // );
+            println!(
+                "CONNECT INFO: {} {} {} {}",
+                protocol_version, adderss, port, status
+            );
             if status == 1 {
                 skip_lisen(stream);
                 status_response(&stream, protocol_version);
@@ -290,7 +291,6 @@ fn network_handle(mut stream: &TcpStream, id: i32, size: i32) {
                 // write_bytes(stream, b"\x5c\x00\x00\x00\x00\x00\x00\x50\xcf\x00\x00\x00\x00\x00\x00\x50\xcf".to_vec());
                 // write_bytes(stream, b"\x4d\xff\xff\xd2\x80\x00\x2d\x40\x04\x00\x00\x00\x00".to_vec());
                 // write_bytes(stream, b"".to_vec());
-               
 
                 // stream.write(b"\x02\x66\x51\xd5\xac\x5a\x3a\xa9\x45\x43\x91\x5d\xb2\xaf\x22\x21\x06\x1e\x04\xc0\x28\x80\x00\x00\x00\x00\x00\x40\x45\x8c\xcc\xcd\x00\x00\x00\x40\x40\xe0\x00\x00\x00\x00\x00\xe0\x00\xaf\x00\x00\x00").unwrap();
                 // let mut buf = Vec::new();
@@ -308,24 +308,29 @@ fn network_handle(mut stream: &TcpStream, id: i32, size: i32) {
                 // });
 
                 // thread::sleep_ms(4000);
-                write_bytes(stream, create_game_event(3, 0)); // set survaivel mode
-                
+                // write_bytes(stream, create_game_event(3, 0)); // set survaivel mode
+
                 // for x in -20..20 {
                 //     println!("Spawn chunk line");
                 //     for z in -29999960..-29999950 {
                 //         println!("Spawn chunk");
                 //     // thread::sleep_ms(100);
-                        
+
                 //     write_bytes(stream, create_level(x, z));
                 // }
                 // }
+                write_bytes(stream, set_render_distance(10));
                 write_bytes(stream, set_player_position(6.7, 2.0, 7.2));
                 unsafe {
                     NEW_LEVEL_COUNTER = 1;
                     OLD_LEVEL_COUNTER = 1;
                 }
+
+               
+
+                write_bytes(stream, create_level_2(0, 1));
+
                 loop {
-                   
                     // for i in 1..=20 {
                     //     thread::sleep_ms(SLEEP);
                     //     write_bytes(stream, set_health(f32::from(i as f32), i, 0.0));
@@ -338,13 +343,27 @@ fn network_handle(mut stream: &TcpStream, id: i32, size: i32) {
 
                     // thread::sleep_ms(3000);
                     // write_bytes(stream, set_health(20.0, 15, 0.0));
-                    skip_lisen(stream);
-                    write_bytes(stream, set_health(20.0, 20, 0.0));
-
                     
 
-
-
+                    for x in -10..10 {
+                        for z in -10..10 {
+                            write_bytes(stream, create_level_1(x, z));
+                        }
+                    }
+                    skip_lisen(stream);
+                    for x in -10..10 {
+                        for z in -10..10 {
+                            write_bytes(stream, create_level_2(x, z));
+                        }
+                    }
+                    skip_lisen(stream);
+                    for x in -10..10 {
+                        for z in -10..10 {
+                            write_bytes(stream, create_level_empty(x, z));
+                        }
+                    }
+                    skip_lisen(stream);
+                    // write_bytes(stream, set_health(20.0, 20, 0.0));
 
                     // thread::sleep_ms(SLEEP);
                     // write_bytes(stream, create_game_event(3, 1));
@@ -412,7 +431,6 @@ fn create_message(msg: String) -> Vec<u8> {
     buf
 }
 
-
 static mut MAX_SCORE: i32 = 0;
 
 fn status_response(stream: &TcpStream, protocol: i32) {
@@ -424,7 +442,7 @@ fn status_response(stream: &TcpStream, protocol: i32) {
     string.push_str(r###"{ "version": { "name": "2", "protocol": "###);
     string.push_str(&format!("{}", protocol));
     string.push_str(r###" }, "players": { "max": -7, "online": 1000, "sample": [ { "name": "DmytroFrame", "id": "4566e69f-c907-48ee-8d71-d7ba5aa00d20" } ] }, "description": { "text": "Infinity parkour! Record level: "###);
-    string.push_str(unsafe {&MAX_SCORE.to_string()});
+    string.push_str(unsafe { &MAX_SCORE.to_string() });
     string.push_str(r###""}, "favicon": "data:image/png;base64,<>", "previewsChat": false }"###);
 
     let mut buf = Vec::new();
@@ -451,7 +469,6 @@ fn set_health(health: f32, food: i32, food_saturation: f32) -> Vec<u8> {
     buf
 }
 
-
 fn set_player_position(X: f64, Y: f64, Z: f64) -> Vec<u8> {
     let mut buf = Vec::new();
     buf.push(57);
@@ -468,6 +485,14 @@ fn create_unload_chunk(x: i32, z: i32) -> Vec<u8> {
     unload_chunk.extend(x.to_be_bytes());
     unload_chunk.extend(z.to_be_bytes());
     unload_chunk
+}
+
+fn set_render_distance(view_distance: i32) -> Vec<u8> {
+    let mut buf: Vec<u8> = Vec::new();
+    buf.extend(b"\x4C");
+    buf.extend(write_int(view_distance));
+    buf
+    
 }
 
 
