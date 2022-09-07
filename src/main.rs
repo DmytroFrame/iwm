@@ -20,7 +20,7 @@ fn main() {
    ╚═╝ ╚══╝╚══╝ ╚═╝     ╚═╝
        "###
     );
-    server::server(8080);
+    server::start(8080);
 }
 
 fn network_handle(mut stream: TcpStream, _id: i32, _size: i32) -> Result<()> {

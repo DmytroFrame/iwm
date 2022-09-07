@@ -5,8 +5,8 @@ use std::{
     thread,
 };
 
-pub fn server(port: u16) -> Result<()> {
-    let listener = TcpListener::bind(SocketAddr::from(([127, 0, 0, 1], port)))?;
+pub fn start(port: u16) {
+    let listener = TcpListener::bind(SocketAddr::from(([127, 0, 0, 1], port))).unwrap();
     for stream in listener.incoming() {
         thread::spawn(move || {
             online::plus();
@@ -15,7 +15,6 @@ pub fn server(port: u16) -> Result<()> {
             println!("END {:?}", thread::current().id());
         });
     }
-    Ok(())
 }
 
 fn handle_connection(mut stream: TcpStream) -> Result<()> {
