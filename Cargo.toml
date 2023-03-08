@@ -1,0 +1,6 @@
+[workspace]
+
+members = [
+    "iwm-anvildb",
+    "iwm-worker"
+]
