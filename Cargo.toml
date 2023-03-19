@@ -2,5 +2,6 @@
 
 members = [
     "iwm-anvildb",
-    "iwm-worker"
+    "iwm-worker",
+    "iwm-java-server-generator",
 ]

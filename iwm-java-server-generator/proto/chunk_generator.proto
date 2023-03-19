@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+
+package chunk_generator;
+
+service ChunkGenerator {
+  rpc getChunk (GetChunkRequest) returns (GetChunkResponse) {}
+}
+
+enum Worlds {
+  overworld = 0;
+  the_nether = 1;
+  the_end = 2;
+}
+
+message GetChunkRequest {
+    fixed32 x = 1;
+    fixed32 z = 2;
+    Worlds world = 3;
+}
+
+message GetChunkResponse {
+  bytes data = 1;
+}

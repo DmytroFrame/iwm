@@ -1,0 +1,6 @@
+java-server/*
+java-server/plugins/PluginMetrics
+
+!java-server/server.jar
+!java-server/eula.txt
+!java-server/plugins/
