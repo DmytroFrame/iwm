@@ -1,21 +1,18 @@
-use std::{io::Read, net::TcpStream};
+use crate::net::protocol::utils::const_bits::{CONTINUE_BIT, SEGMENT_BITS};
 
-const SEGMENT_BITS: i32 = 0x7F;
-const CONTINUE_BIT: i32 = 0x80;
-
-pub(crate) struct PackageReader<'a> {
-    stream: &'a TcpStream,
+pub(crate) struct BufferReader {
+    buf: Vec<u8>,
 }
 
-impl<'a> PackageReader<'a> {
-    pub fn new(stream: &'a mut TcpStream) -> Self {
-        PackageReader { stream }
+impl BufferReader {
+    pub fn new(buf: &[u8]) -> Self {
+        BufferReader {
+            buf: Vec::from(buf),
+        }
     }
 
-    fn byte(&mut self) -> u8 {
-        let mut buf: [u8; 1] = [0; 1];
-        self.stream.read(&mut buf).unwrap();
-        buf[0]
+    pub fn byte(&mut self) -> u8 {
+        self.buf.remove(0)
     }
 
     pub fn var_int(&mut self) -> i32 {
@@ -49,6 +46,19 @@ impl<'a> PackageReader<'a> {
 
     pub fn f64(&mut self) -> f64 {
         f64::from_be_bytes([
+            self.byte(),
+            self.byte(),
+            self.byte(),
+            self.byte(),
+            self.byte(),
+            self.byte(),
+            self.byte(),
+            self.byte(),
+        ])
+    }
+
+    pub fn i64(&mut self) -> i64 {
+        i64::from_be_bytes([
             self.byte(),
             self.byte(),
             self.byte(),

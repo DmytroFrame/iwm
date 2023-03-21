@@ -1,13 +1,12 @@
-const SEGMENT_BITS: i32 = 0x7F;
-const CONTINUE_BIT: i32 = 0x80;
+use crate::net::protocol::utils::const_bits::{CONTINUE_BIT, SEGMENT_BITS};
 
-pub(crate) struct PackageWriter {
+pub(crate) struct BufferWriter {
     buf: Vec<u8>,
 }
 
-impl PackageWriter {
+impl BufferWriter {
     pub fn new() -> Self {
-        PackageWriter { buf: Vec::new() }
+        BufferWriter { buf: Vec::new() }
     }
 
     pub fn byte(&mut self, byte: u8) {
@@ -36,7 +35,7 @@ impl PackageWriter {
         self.buf.extend(buf_data);
     }
 
-    pub fn long(&mut self, value: i64) {
+    pub fn i64(&mut self, value: i64) {
         self.buf.extend(value.to_be_bytes());
     }
 
@@ -64,11 +63,3 @@ fn int(mut value: i32) -> Vec<u8> {
         value = (u32::from_be_bytes(value.to_be_bytes()) >> 7) as i32
     }
 }
-
-// fn unsigned_right_shift(value: i32, n: i32) -> u32 {
-//     let value_as_u32: u32 = {
-//         let bytes = value.to_be_bytes();
-//         u32::from_be_bytes(bytes)
-//     };
-//     return value_as_u32 >> n;
-// }
