@@ -1,5 +1,5 @@
-use tokio::{io::ReadHalf, net::TcpStream};
 use crate::net::protocol::utils::stream_reader::StreamReader;
+use tokio::{io::ReadHalf, net::TcpStream};
 
 #[derive(Debug)]
 pub(crate) struct KeepAlive {

@@ -1,7 +1,4 @@
-use tokio::{
-    io::{AsyncReadExt},
-    net::TcpStream,
-};
+use tokio::{io::AsyncReadExt, net::TcpStream};
 
 use crate::net::protocol::utils::const_bits::{CONTINUE_BIT, SEGMENT_BITS};
 

@@ -43,7 +43,6 @@ impl Session {
                 on_ground: true,
                 health: 20.0,
             },
-            
         }
     }
 
@@ -59,7 +58,7 @@ impl Session {
                 )))
                 .await
                 .unwrap();
-                
+
             self.send_chunk().await;
         }
     }
@@ -73,14 +72,13 @@ impl Session {
         tokio::spawn(async move {
             for x in current_x - radius..=current_x + radius {
                 for z in current_z - radius..=current_z + radius {
-                        output
+                    output
                         .send(OutputPackage::ChunkDataAndUpdateLight(get_flat_chunk(x, z)))
                         .await
                         .unwrap();
                 }
             }
         });
-
     }
 }
 

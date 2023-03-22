@@ -1,10 +1,10 @@
 // #[macro_use]
 // extern crate lazy_static;
 
+mod game;
 mod logger;
 mod net;
 mod server;
-mod game;
 
 #[tokio::main(worker_threads = 1)]
 // #[tokio::main]

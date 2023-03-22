@@ -65,11 +65,10 @@ async fn writer_loop(mut stream_rx: WriteHalf<TcpStream>, mut writer_rx: Receive
         let package = writer_rx.recv().await.unwrap();
 
         match &package {
-            OutputPackage::ChunkDataAndUpdateLight(_) => {},
+            OutputPackage::ChunkDataAndUpdateLight(_) => {}
 
-            any =>  Logger::new("WriterIO").debug(&format!("{:?}", any)),
+            any => Logger::new("WriterIO").debug(&format!("{:?}", any)),
         }
-
 
         let buffer = output_package_handle(package).await;
         stream_rx.write(&buffer).await.unwrap();

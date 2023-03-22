@@ -39,7 +39,6 @@ impl BufferWriter {
         self.buf.extend(value.to_be_bytes());
     }
 
-
     pub fn i64(&mut self, value: i64) {
         self.buf.extend(value.to_be_bytes());
     }

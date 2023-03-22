@@ -96,7 +96,7 @@ impl BufferReader {
 
     pub fn uuid(&mut self) -> String {
         let mut result = String::new();
-        
+
         for byte in self.bytes(16) {
             result.push_str(&format!("{:x}", byte));
         }
