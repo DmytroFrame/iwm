@@ -6,11 +6,9 @@ use tokio::{
 use crate::logger::Logger;
 
 use super::server::{
-    keep_alive::KeepAlive,
-    set_player_position::SetPlayerPosition,
+    keep_alive::KeepAlive, set_player_position::SetPlayerPosition,
     set_player_position_and_rotation::SetPlayerPositionAndRotation,
-    set_player_rotation::SetPlayerRotation, 
-    unknown::Unknown, 
+    set_player_rotation::SetPlayerRotation, unknown::Unknown,
 };
 
 #[derive(Debug)]
@@ -29,7 +27,7 @@ pub(crate) async fn input_package_handle(
 ) -> InputPackage {
     match id {
         0x12 => InputPackage::KeepAlive(KeepAlive::from_stream(stream).await),
-        
+
         0x14 => InputPackage::SetPlayerPosition(SetPlayerPosition::from_stream(stream).await),
 
         0x15 => InputPackage::SetPlayerPositionAndRotation(
@@ -37,8 +35,6 @@ pub(crate) async fn input_package_handle(
         ),
 
         0x16 => InputPackage::SetPlayerRotation(SetPlayerRotation::from_stream(stream).await),
-
-        
 
         _ => {
             let mut raw_data = vec![0; size as usize];

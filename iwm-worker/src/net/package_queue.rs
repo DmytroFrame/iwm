@@ -1,20 +1,26 @@
 use std::time::Duration;
 
+use crate::logger::Logger;
+
 use super::protocol::package_input::{input_package_handle, InputPackage};
+use super::protocol::package_output::{output_package_handle, OutputPackage};
 use super::protocol::utils::buffer_writer::BufferWriter;
 use super::protocol::utils::stream_reader::StreamReader;
-use tokio::io::{split, AsyncReadExt, AsyncWriteExt, ReadHalf, WriteHalf};
+use tokio::io::{split, AsyncWriteExt, ReadHalf, WriteHalf};
 use tokio::net::TcpStream;
-use tokio::stream;
 use tokio::sync::mpsc::{channel, Receiver, Sender};
 
 const MAX_PACKETS_IN_QUEUE: usize = 200;
 
-pub(crate) async fn create_package_queue(
-    stream: TcpStream,
-) -> (Sender<u8>, Receiver<InputPackage>) {
+pub(crate) struct PlayerStream {
+    pub input: Receiver<InputPackage>,
+    pub output: Sender<OutputPackage>,
+}
+
+pub(crate) async fn create_package_queue(stream: TcpStream) -> PlayerStream {
     let (stream_tx, stream_rx): (ReadHalf<TcpStream>, WriteHalf<TcpStream>) = split(stream);
-    let (writer_tx, writer_rx): (Sender<u8>, Receiver<u8>) = channel(MAX_PACKETS_IN_QUEUE);
+    let (writer_tx, writer_rx): (Sender<OutputPackage>, Receiver<OutputPackage>) =
+        channel(MAX_PACKETS_IN_QUEUE);
     let (reader_tx, reader_rx): (Sender<InputPackage>, Receiver<InputPackage>) =
         channel(MAX_PACKETS_IN_QUEUE);
 
@@ -22,7 +28,10 @@ pub(crate) async fn create_package_queue(
 
     tokio::spawn(writer_loop(stream_rx, writer_rx));
 
-    (writer_tx, reader_rx)
+    PlayerStream {
+        input: reader_rx,
+        output: writer_tx,
+    }
 }
 
 async fn reader_loop(mut stream_tx: ReadHalf<TcpStream>, reader_tx: Sender<InputPackage>) {
@@ -43,29 +52,21 @@ async fn reader_loop(mut stream_tx: ReadHalf<TcpStream>, reader_tx: Sender<Input
         //     buffer
         // );
 
-        let package = input_package_handle(size- 1, id, &mut stream_tx).await;
+        let package = input_package_handle(size - 1, id, &mut stream_tx).await;
+
+        // Logger::new("ReaderIO").info(&format!("{:?}", package));
 
         reader_tx.send(package).await.unwrap();
     }
 }
 
-async fn writer_loop(mut stream_rx: WriteHalf<TcpStream>, mut writer_rx: Receiver<u8>) {
+async fn writer_loop(mut stream_rx: WriteHalf<TcpStream>, mut writer_rx: Receiver<OutputPackage>) {
     loop {
-        // let byte = writer_rx.recv().await.unwrap();
-        // stream_rx.write_u8(byte).await.unwrap();
+        let package = writer_rx.recv().await.unwrap();
 
-        // keeep alive package
-        let mut writer = BufferWriter::new();
-        writer.bytes(&[0x20, 0x00, 0x00, 0x00, 0x00, 0x08, 0xA2, 0x8E, 0x07]);
-        stream_rx.write(&writer.build()).await.unwrap();
-        tokio::time::sleep(Duration::from_secs(20)).await;
-        
+        Logger::new("WriterIO").debug(&format!("{:?}", package));
+
+        let buffer = output_package_handle(package).await;
+        stream_rx.write(&buffer).await.unwrap();
     }
 }
-
-// const KEEEP_ALIFE_INTERVAL: i64 = 60 * 20;
-// use std::time::{SystemTime, UNIX_EPOCH};
-
-// fn get_time_ms() -> i64 {
-//     SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis() as i64
-// }

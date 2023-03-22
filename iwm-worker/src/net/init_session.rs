@@ -5,15 +5,23 @@ use tokio::{
     net::TcpStream,
 };
 
-use crate::logger::Logger;
+use crate::{ net::protocol::{server::login_start::LoginStart}, game::game_session::game_session};
 
 use super::{
     package_queue::create_package_queue,
-    protocol::{mock, utils::buffer_writer::BufferWriter},
+    protocol::{mock, utils::{buffer_writer::BufferWriter, tcp_stream_reader::TcpStreamReader}},
 };
 
 pub async fn init_session(mut stream: TcpStream) {
-    // stream.read(&mut [0; 256]).await.unwrap();
+    let mut reader = TcpStreamReader::new(&mut stream);
+
+    let size = reader.var_int().await;
+    let id = reader.var_int().await;
+    
+    let mut buf = vec![0; size as usize -1];
+    stream.read(&mut buf).await.unwrap();
+    println!("{:?}", LoginStart::from_bytes(buf));
+
 
     stream
         .write(&[
@@ -24,65 +32,18 @@ pub async fn init_session(mut stream: TcpStream) {
         .await
         .unwrap();
 
+
     stream.write(mock::LOGIN).await.unwrap();
 
-    let mut writer = BufferWriter::new();
-    writer.bytes(&[
-        0x39, 0x40, 0x86, 0xEE, 0xA5, 0x6F, 0xF3, 0xA0, 0x86, 0x40, 0x51, 0x74, 0x9A, 0x32, 0x9B,
-        0xEE, 0x7D, 0x40, 0x87, 0x9E, 0x79, 0xBF, 0xA5, 0xC9, 0x04, 0x41, 0x51, 0x20, 0xE0, 0x41,
-        0x33, 0xFE, 0x9E, 0x00, 0x01, 0x00,
-    ]);
-    stream.write(&writer.build()).await.unwrap();
 
     let mut writer = BufferWriter::new();
     writer.bytes(&[0x4B, 0x2D, 0x2F]);
     stream.write(&writer.build()).await.unwrap();
 
-    let mut bufer = vec![0; 4000];
 
-    let count = stream.read(&mut bufer).await.unwrap();
-
-    // buf.truncate(count);
-    // let mut buf = &bufer[..=count];
-
-    // println!("len {} {:02X?} ", buf.len(), buf);
-
-    // let mut numb: i32 = 0;
-    // loop {
-    //     numb += 1 + decode_varint(&mut &buf[(numb as usize)..]).unwrap();
-    //     println!("numb {numb}")
-    // }
-
-    let (tx, mut rx) = create_package_queue(stream).await;
-
-    while let Some(message) = rx.recv().await {
-        Logger::new("InputRX").debug(&format!("{:?}", message));
-    }
+    let player_stream = create_package_queue(stream).await;
+    
+    game_session(player_stream).await;
 
     tokio::time::sleep(Duration::from_secs(199)).await;
-}
-fn decode_varint(buf: &mut &[u8]) -> Result<i32, std::io::Error> {
-    let mut result = 0;
-    let mut shift = 0;
-
-    loop {
-        if buf.is_empty() {
-            return Err(std::io::Error::new(
-                std::io::ErrorKind::UnexpectedEof,
-                "Unexpected end of input",
-            ));
-        }
-
-        let b = buf[0];
-        *buf = &buf[1..];
-
-        result |= ((b & 0x7f) as i32) << shift;
-        shift += 7;
-
-        if b & 0x80 == 0 {
-            break;
-        }
-    }
-
-    Ok(result)
 }

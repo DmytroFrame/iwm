@@ -4,6 +4,7 @@
 mod logger;
 mod net;
 mod server;
+mod game;
 
 #[tokio::main(worker_threads = 1)]
 // #[tokio::main]

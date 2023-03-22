@@ -69,7 +69,7 @@ pub fn pong(value: i64) -> Vec<u8> {
 }
 
 pub fn ping(buf: Vec<u8>) -> i64 {
-    let mut package = BufferReader::new(&buf);
+    let mut package = BufferReader::new(buf);
     package.byte();
     package.i64()
 }

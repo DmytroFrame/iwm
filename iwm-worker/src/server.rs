@@ -47,7 +47,7 @@ async fn connection_controller(mut stream: TcpStream) {
 }
 
 async fn handshaking_handle(mut stream: TcpStream, pkg_size: u8) {
-    let mut buffer = vec![0; pkg_size as usize];
+    let mut buffer = vec![0; pkg_size as usize - 1];
     stream.read(&mut buffer).await.unwrap();
 
     let handshaking = Handshaking::from_bytes(&buffer);

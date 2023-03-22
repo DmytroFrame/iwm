@@ -5,14 +5,20 @@ pub(crate) struct BufferReader {
 }
 
 impl BufferReader {
-    pub fn new(buf: &[u8]) -> Self {
-        BufferReader {
-            buf: Vec::from(buf),
-        }
+    pub fn new(buf: Vec<u8>) -> Self {
+        BufferReader { buf }
     }
 
     pub fn byte(&mut self) -> u8 {
         self.buf.remove(0)
+    }
+
+    pub fn bytes(&mut self, size: usize) -> Vec<u8> {
+        let mut buf = Vec::new();
+        for _ in 0..size {
+            buf.push(self.byte())
+        }
+        buf
     }
 
     pub fn var_int(&mut self) -> i32 {
@@ -86,5 +92,15 @@ impl BufferReader {
             buf.push(self.byte());
         }
         String::from_utf8_lossy(&buf).to_string()
+    }
+
+    pub fn uuid(&mut self) -> String {
+        let mut result = String::new();
+        
+        for byte in self.bytes(16) {
+            result.push_str(&format!("{:x}", byte));
+        }
+
+        result
     }
 }

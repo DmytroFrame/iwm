@@ -34,7 +34,7 @@ impl Handshaking {
     // }
 
     pub fn from_bytes(buf: &[u8]) -> Handshaking {
-        let mut reader = BufferReader::new(buf);
+        let mut reader = BufferReader::new(buf.into());
 
         Handshaking {
             protocol_version: reader.var_int(),
