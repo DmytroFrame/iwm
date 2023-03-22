@@ -44,8 +44,11 @@ pub(crate) async fn input_package_handle(
 
             let unknown = Unknown { size, id, raw_data };
 
-            // Logger::new("InputPackage:Unknown")
-            //     .warn(&format!("Get unknown package: {:?}", unknown));
+            Logger::new("ReaderIO").error(&format!(
+                "size: {} id: 0x{:X}, data: {:02X?}",
+                unknown.size, unknown.id, unknown.raw_data
+            ));
+
             InputPackage::Unknown(unknown)
         }
     }

@@ -13,7 +13,10 @@ use crate::{
     },
 };
 
-use super::player::player_struct::{Gamemode, Player, Vec2, Vec3};
+use super::{
+    chunk::get_flat_chunk::get_flat_chunk,
+    player::player_struct::{Gamemode, Player, Vec2, Vec3},
+};
 
 struct Session {
     player: Player,
@@ -25,6 +28,7 @@ impl Session {
     pub fn new(stream: PlayerStream) -> Session {
         Session {
             stream,
+            chunk_center: Vec2 { x: 0, z: 0 },
             player: Player {
                 entity_id: 1,
                 username: String::new(),
@@ -39,7 +43,7 @@ impl Session {
                 on_ground: true,
                 health: 20.0,
             },
-            chunk_center: Vec2 { x: 0, z: 0 },
+            
         }
     }
 
@@ -55,7 +59,28 @@ impl Session {
                 )))
                 .await
                 .unwrap();
+                
+            self.send_chunk().await;
         }
+    }
+
+    pub async fn send_chunk(&mut self) {
+        let radius = 1;
+        let current_x = self.chunk_center.x;
+        let current_z = self.chunk_center.z;
+        let output = self.stream.output.clone();
+
+        tokio::spawn(async move {
+            for x in current_x - radius..=current_x + radius {
+                for z in current_z - radius..=current_z + radius {
+                        output
+                        .send(OutputPackage::ChunkDataAndUpdateLight(get_flat_chunk(x, z)))
+                        .await
+                        .unwrap();
+                }
+            }
+        });
+
     }
 }
 
@@ -71,6 +96,8 @@ pub(crate) async fn game_session(stream: PlayerStream) {
     let mut session = Session::new(stream);
     let mut last_keep_alive = Instant::now();
 
+    session.send_chunk().await;
+
     while let Some(message) = session.stream.input.recv().await {
         if Instant::now().duration_since(last_keep_alive) > Duration::from_secs(20) {
             last_keep_alive = Instant::now();
@@ -82,13 +109,6 @@ pub(crate) async fn game_session(stream: PlayerStream) {
         }
 
         match message {
-            InputPackage::Unknown(unk) => {
-                log.debug(&format!(
-                    "size: {} id: 0x{:X}, data: {:02X?}",
-                    unk.size, unk.id, unk.raw_data
-                ));
-            }
-
             InputPackage::SetPlayerPositionAndRotation(payload) => {
                 if (
                     payload.x,
@@ -147,7 +167,7 @@ pub(crate) async fn game_session(stream: PlayerStream) {
                     session.player.on_ground = payload.on_ground;
                 }
             }
-            any => log.error(&format!("{:?}", any)),
+            any => {}
         }
     }
 }

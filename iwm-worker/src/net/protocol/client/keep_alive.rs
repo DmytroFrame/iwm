@@ -1,7 +1,7 @@
 use crate::net::protocol::utils::buffer_writer::BufferWriter;
 
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub(crate) struct KeepAlive {
     pub keep_alive_id: i64
 }
