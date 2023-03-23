@@ -14,7 +14,7 @@ use crate::{
 };
 
 use super::{
-    chunk::get_flat_chunk::get_flat_chunk,
+    chunk::{get_chunk_radius::get_chunk_radius, get_flat_chunk::get_flat_chunk},
     player::player_struct::{Gamemode, Player, Vec2, Vec3},
 };
 
@@ -28,7 +28,7 @@ impl Session {
     pub fn new(stream: PlayerStream) -> Session {
         Session {
             stream,
-            chunk_center: Vec2 { x: 0, z: 0 },
+            chunk_center: Vec2 { x: 2, z: 0 },
             player: Player {
                 entity_id: 1,
                 username: String::new(),
@@ -64,21 +64,31 @@ impl Session {
     }
 
     pub async fn send_chunk(&mut self) {
-        let radius = 1;
-        let current_x = self.chunk_center.x;
-        let current_z = self.chunk_center.z;
-        let output = self.stream.output.clone();
+        // let radius = 8;
+        let current_x = self.chunk_center.x.clone();
+        let current_z = self.chunk_center.z.clone();
 
-        tokio::spawn(async move {
-            for x in current_x - radius..=current_x + radius {
-                for z in current_z - radius..=current_z + radius {
-                    output
-                        .send(OutputPackage::ChunkDataAndUpdateLight(get_flat_chunk(x, z)))
-                        .await
-                        .unwrap();
-                }
-            }
-        });
+        self.stream
+            .output
+            .send(OutputPackage::ChunkDataAndUpdateLight(get_flat_chunk(
+                current_x, current_z,
+            )))
+            .await
+            .unwrap();
+        // println!("{:?}", get_chunk_radius(current_x, current_z, radius));
+
+        // for vec2 in get_chunk_radius(current_x, current_z, radius) {
+        //     // println!("{:?}", vec2);
+
+        //     self.stream
+        //         .output
+        //         .send(OutputPackage::ChunkDataAndUpdateLight(get_flat_chunk(
+        //             vec2.x, vec2.z,
+        //         )))
+        //         .await
+        //         .unwrap();
+        //     // tokio::time::sleep(Duration::from_millis(100)).await;
+        // }
     }
 }
 
@@ -94,7 +104,7 @@ pub(crate) async fn game_session(stream: PlayerStream) {
     let mut session = Session::new(stream);
     let mut last_keep_alive = Instant::now();
 
-    session.send_chunk().await;
+    // session.send_chunk().await;
 
     while let Some(message) = session.stream.input.recv().await {
         if Instant::now().duration_since(last_keep_alive) > Duration::from_secs(20) {

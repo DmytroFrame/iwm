@@ -1,5 +1,3 @@
-use std::time::Duration;
-
 use tokio::{
     io::{AsyncReadExt, AsyncWriteExt},
     net::TcpStream,
@@ -19,7 +17,7 @@ pub async fn init_session(mut stream: TcpStream) {
     let mut reader = TcpStreamReader::new(&mut stream);
 
     let size = reader.var_int().await;
-    let id = reader.var_int().await;
+    let _id = reader.var_int().await;
 
     let mut buf = vec![0; size as usize - 1];
     stream.read(&mut buf).await.unwrap();
@@ -43,6 +41,4 @@ pub async fn init_session(mut stream: TcpStream) {
     let player_stream = create_package_queue(stream).await;
 
     game_session(player_stream).await;
-
-    tokio::time::sleep(Duration::from_secs(199)).await;
 }
