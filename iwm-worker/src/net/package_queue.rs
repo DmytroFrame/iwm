@@ -1,12 +1,9 @@
 use crate::logger::Logger;
-use crate::net::protocol::server::disconnect::Disconnect;
 
 use super::protocol::package_input::{input_package_handle, InputPackage};
 use super::protocol::package_output::{output_package_handle, OutputPackage};
 use super::protocol::utils::package_header::PackageHeader;
-// use super::protocol::utils::buffer_writer::BufferWriter;
-use super::protocol::utils::stream_reader::StreamReader;
-use tokio::io::{split, AsyncWriteExt, ReadHalf, WriteHalf};
+use tokio::io::{split, AsyncReadExt, AsyncWriteExt, ReadHalf, WriteHalf};
 use tokio::net::TcpStream;
 use tokio::sync::mpsc::{channel, Receiver, Sender};
 
@@ -37,20 +34,18 @@ pub(crate) async fn create_package_queue(stream: TcpStream) -> PlayerStream {
 async fn reader_loop(mut stream_tx: ReadHalf<TcpStream>, reader_tx: Sender<InputPackage>) {
     loop {
         match PackageHeader::from_steam(&mut stream_tx).await {
-            Ok(header) => {
-                let package =
-                    input_package_handle(header.size - 1, header.id, &mut stream_tx).await;
-
-                // Logger::new("ReaderIO").info(&format!("{:?}", package));
-
-                reader_tx.send(package).await.unwrap();
-            }
-
-            Err(err) => {
-                println!("Disconnect: {:?}", err);
+            Err(_) => {
                 reader_tx.send(InputPackage::Disconnect).await.unwrap();
                 reader_tx.closed().await;
                 break;
+            }
+
+            Ok(header) => {
+                let mut buffer = vec![0; header.size as usize - 1];
+                stream_tx.read(&mut buffer).await.unwrap();
+
+                let package = input_package_handle(header.id, buffer);
+                reader_tx.send(package).await.unwrap();
             }
         }
     }
@@ -60,7 +55,6 @@ async fn writer_loop(mut stream_rx: WriteHalf<TcpStream>, mut writer_rx: Receive
     loop {
         match writer_rx.recv().await {
             None => {
-                println!("None on writer_loop:");
                 writer_rx.close();
                 break;
             }

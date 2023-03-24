@@ -1,5 +1,6 @@
-use crate::net::protocol::utils::stream_reader::StreamReader;
 use tokio::{io::ReadHalf, net::TcpStream};
+
+use crate::net::protocol::utils::buffer_reader::BufferReader;
 
 #[derive(Debug)]
 pub(crate) struct KeepAlive {
@@ -7,11 +8,11 @@ pub(crate) struct KeepAlive {
 }
 
 impl KeepAlive {
-    pub async fn from_stream(stream: &mut ReadHalf<TcpStream>) -> KeepAlive {
-        let mut reader = StreamReader::new(stream);
+    pub fn from_buffer(buf: Vec<u8>) -> KeepAlive {
+        let mut reader = BufferReader::new(buf);
 
         KeepAlive {
-            keep_alive_id: reader.i64().await,
+            keep_alive_id: reader.i64(),
         }
     }
 }

@@ -1,14 +1,9 @@
-use tokio::{
-    io::{AsyncReadExt, ReadHalf},
-    net::TcpStream,
-};
-
 use crate::logger::Logger;
 
 use super::server::{
     keep_alive::KeepAlive, set_player_position::SetPlayerPosition,
     set_player_position_and_rotation::SetPlayerPositionAndRotation,
-    set_player_rotation::SetPlayerRotation, unknown::Unknown, disconnect::Disconnect,
+    set_player_rotation::SetPlayerRotation, unknown::Unknown,
 };
 
 #[derive(Debug)]
@@ -21,29 +16,24 @@ pub(crate) enum InputPackage {
     Disconnect,
 }
 
-pub(crate) async fn input_package_handle(
-    size: i32,
-    id: i32,
-    stream: &mut ReadHalf<TcpStream>,
-) -> InputPackage {
+pub(crate) fn input_package_handle(id: i32, buffer: Vec<u8>) -> InputPackage {
     match id {
-        0x12 => InputPackage::KeepAlive(KeepAlive::from_stream(stream).await),
+        0x12 => InputPackage::KeepAlive(KeepAlive::from_buffer(buffer)),
 
-        0x14 => InputPackage::SetPlayerPosition(SetPlayerPosition::from_stream(stream).await),
+        0x14 => InputPackage::SetPlayerPosition(SetPlayerPosition::from_buffer(buffer)),
 
         0x15 => InputPackage::SetPlayerPositionAndRotation(
-            SetPlayerPositionAndRotation::from_stream(stream).await,
+            SetPlayerPositionAndRotation::from_buffer(buffer),
         ),
 
-        0x16 => InputPackage::SetPlayerRotation(SetPlayerRotation::from_stream(stream).await),
+        0x16 => InputPackage::SetPlayerRotation(SetPlayerRotation::from_buffer(buffer)),
 
         _ => {
-            let mut raw_data = vec![0; size as usize];
-            let count = stream.read(&mut raw_data).await.unwrap();
-
-            raw_data.truncate(count);
-
-            let unknown = Unknown { size, id, raw_data };
+            let unknown = Unknown {
+                id,
+                size: buffer.len() as i32 + 1,
+                raw_data: buffer,
+            };
 
             Logger::new("ReaderIO").error(&format!(
                 "size: {} id: 0x{:X}, data: {:02X?}",

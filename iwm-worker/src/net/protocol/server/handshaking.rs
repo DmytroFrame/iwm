@@ -1,5 +1,4 @@
-use crate::net::protocol::utils::{buffer_reader::BufferReader, stream_reader::StreamReader};
-use tokio::{io::ReadHalf, net::TcpStream};
+use crate::net::protocol::utils::buffer_reader::BufferReader;
 
 #[derive(Debug, PartialEq)]
 pub enum HandshakingNextState {
@@ -16,23 +15,6 @@ pub(crate) struct Handshaking {
 }
 
 impl Handshaking {
-    // pub async fn from_stream(stream: &mut ReadHalf<TcpStream>) -> Handshaking {
-    //     let mut reader = StreamReader::new(stream);
-
-    //     Handshaking {
-    //         protocol_version: reader.var_int().await,
-    //         server_host: reader.string().await,
-    //         server_port: reader.u16().await,
-    //         next_state: {
-    //             if reader.var_int().await == 1 {
-    //                 HandshakingNextState::Status
-    //             } else {
-    //                 HandshakingNextState::Login
-    //             }
-    //         },
-    //     }
-    // }
-
     pub fn from_bytes(buf: &[u8]) -> Handshaking {
         let mut reader = BufferReader::new(buf.into());
 

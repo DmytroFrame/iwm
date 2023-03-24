@@ -4,24 +4,16 @@ use tokio::{
 };
 
 use crate::{
-    game::process::init_process::init_process, net::protocol::server::login_start::LoginStart,
+    game::process::init_process::init_process,
+    net::protocol::{server::login_start::LoginStart, utils::package_header::PackageHeader},
 };
 
-use super::{
-    package_queue::create_package_queue,
-    protocol::{
-        mock,
-        utils::{buffer_writer::BufferWriter, tcp_stream_reader::TcpStreamReader},
-    },
-};
+use super::{package_queue::create_package_queue, protocol::mock};
 
 pub async fn init_session(mut stream: TcpStream) {
-    let mut reader = TcpStreamReader::new(&mut stream);
+    let header = PackageHeader::from_steam(&mut stream).await.unwrap();
 
-    let size = reader.var_int().await;
-    let _id = reader.var_int().await;
-
-    let mut buf = vec![0; size as usize - 1];
+    let mut buf = vec![0; header.size as usize - 1];
     stream.read(&mut buf).await.unwrap();
     println!("{:?}", LoginStart::from_buffer(buf));
 
@@ -35,7 +27,6 @@ pub async fn init_session(mut stream: TcpStream) {
         .unwrap();
 
     stream.write(mock::LOGIN).await.unwrap();
-
 
     let player_stream = create_package_queue(stream).await;
 
