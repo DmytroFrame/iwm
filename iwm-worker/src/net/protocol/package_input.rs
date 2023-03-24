@@ -8,7 +8,7 @@ use crate::logger::Logger;
 use super::server::{
     keep_alive::KeepAlive, set_player_position::SetPlayerPosition,
     set_player_position_and_rotation::SetPlayerPositionAndRotation,
-    set_player_rotation::SetPlayerRotation, unknown::Unknown,
+    set_player_rotation::SetPlayerRotation, unknown::Unknown, disconnect::Disconnect,
 };
 
 #[derive(Debug)]
@@ -18,6 +18,7 @@ pub(crate) enum InputPackage {
     SetPlayerPositionAndRotation(SetPlayerPositionAndRotation),
     SetPlayerRotation(SetPlayerRotation),
     Unknown(Unknown),
+    Disconnect,
 }
 
 pub(crate) async fn input_package_handle(

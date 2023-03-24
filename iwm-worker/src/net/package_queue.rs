@@ -1,7 +1,9 @@
 use crate::logger::Logger;
+use crate::net::protocol::server::disconnect::Disconnect;
 
 use super::protocol::package_input::{input_package_handle, InputPackage};
 use super::protocol::package_output::{output_package_handle, OutputPackage};
+use super::protocol::utils::package_header::PackageHeader;
 // use super::protocol::utils::buffer_writer::BufferWriter;
 use super::protocol::utils::stream_reader::StreamReader;
 use tokio::io::{split, AsyncWriteExt, ReadHalf, WriteHalf};
@@ -34,41 +36,45 @@ pub(crate) async fn create_package_queue(stream: TcpStream) -> PlayerStream {
 
 async fn reader_loop(mut stream_tx: ReadHalf<TcpStream>, reader_tx: Sender<InputPackage>) {
     loop {
-        let mut reader = StreamReader::new(&mut stream_tx);
+        match PackageHeader::from_steam(&mut stream_tx).await {
+            Ok(header) => {
+                let package =
+                    input_package_handle(header.size - 1, header.id, &mut stream_tx).await;
 
-        let size = reader.var_int().await;
-        let id = reader.var_int().await;
+                // Logger::new("ReaderIO").info(&format!("{:?}", package));
 
-        // let mut buffer: Vec<u8> = vec![0; size as usize - 1];
+                reader_tx.send(package).await.unwrap();
+            }
 
-        // let count = stream_tx.read(&mut buffer).await.unwrap();
-
-        // print!(
-        //     "len: {}  real: {} id:{id} {:02X?}",
-        //     buffer.len(),
-        //     count,
-        //     buffer
-        // );
-
-        let package = input_package_handle(size - 1, id, &mut stream_tx).await;
-
-        // Logger::new("ReaderIO").info(&format!("{:?}", package));
-
-        reader_tx.send(package).await.unwrap();
+            Err(err) => {
+                println!("Disconnect: {:?}", err);
+                reader_tx.send(InputPackage::Disconnect).await.unwrap();
+                reader_tx.closed().await;
+                break;
+            }
+        }
     }
 }
 
 async fn writer_loop(mut stream_rx: WriteHalf<TcpStream>, mut writer_rx: Receiver<OutputPackage>) {
     loop {
-        let package = writer_rx.recv().await.unwrap();
+        match writer_rx.recv().await {
+            None => {
+                println!("None on writer_loop:");
+                writer_rx.close();
+                break;
+            }
 
-        match &package {
-            OutputPackage::ChunkDataAndUpdateLight(_) => {}
+            Some(package) => {
+                match &package {
+                    OutputPackage::ChunkDataAndUpdateLight(_) => {}
 
-            any => Logger::new("WriterIO").debug(&format!("{:?}", any)),
+                    any => Logger::new("WriterIO").debug(&format!("{:?}", any)),
+                }
+
+                let buffer = output_package_handle(package).await;
+                stream_rx.write(&buffer).await.unwrap();
+            }
         }
-
-        let buffer = output_package_handle(package).await;
-        stream_rx.write(&buffer).await.unwrap();
     }
 }

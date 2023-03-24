@@ -19,6 +19,7 @@ pub(super) struct PlayerSession {
     pub stream: PlayerStream,
     pub last_keep_alive: Instant,
     pub chunk_center: Vec2<i32>,
+    pub is_disconnected: bool,
 }
 
 impl PlayerSession {
@@ -27,6 +28,7 @@ impl PlayerSession {
             stream,
             chunk_center: Vec2 { x: 2, z: 0 },
             last_keep_alive: Instant::now(),
+            is_disconnected: false,
             player: Player {
                 entity_id: 1,
                 username: String::new(),
@@ -82,6 +84,17 @@ pub(super) struct Process {
     pub chunks: Vec<String>,
 }
 
+impl Process {
+    pub fn is_all_disconnected(&mut self) -> bool {
+        for player in &mut self.players {
+            if player.is_disconnected == false {
+                return false;
+            }
+        }
+        return true;
+    }
+}
+
 pub(crate) async fn init_process(stream: PlayerStream) {
     let player_session = PlayerSession::new(stream);
 
@@ -93,5 +106,9 @@ pub(crate) async fn init_process(stream: PlayerStream) {
 
     loop {
         game_process(&mut process).await;
+        if process.is_all_disconnected() {
+            println!("off");
+            break;
+        }
     }
 }

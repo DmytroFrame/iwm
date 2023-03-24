@@ -14,16 +14,12 @@ use super::init_process::Process;
 pub(super) async fn game_process(process: &mut Process) {
     for session in &mut process.players {
         while let Some(message) = session.stream.input.recv().await {
-            if Instant::now().duration_since(session.last_keep_alive) > Duration::from_secs(20) {
-                session.last_keep_alive = Instant::now();
-
-                let package = OutputPackage::KeepAlive(KeepAlive {
-                    keep_alive_id: 1337,
-                });
-                session.stream.output.send(package).await.unwrap();
-            }
-
             match message {
+                InputPackage::Disconnect => {
+                    session.is_disconnected = true;
+                    break;
+                }
+
                 InputPackage::SetPlayerPositionAndRotation(payload) => {
                     if (
                         payload.x,
@@ -83,6 +79,15 @@ pub(super) async fn game_process(process: &mut Process) {
                     }
                 }
                 any => {}
+            }
+
+            if Instant::now().duration_since(session.last_keep_alive) > Duration::from_secs(20) {
+                session.last_keep_alive = Instant::now();
+
+                let package = OutputPackage::KeepAlive(KeepAlive {
+                    keep_alive_id: 1337,
+                });
+                session.stream.output.send(package).await.unwrap();
             }
         }
     }
