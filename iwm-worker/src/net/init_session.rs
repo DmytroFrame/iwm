@@ -3,7 +3,9 @@ use tokio::{
     net::TcpStream,
 };
 
-use crate::{game::game_session::game_session, net::protocol::server::login_start::LoginStart};
+use crate::{
+    game::process::init_process::init_process, net::protocol::server::login_start::LoginStart,
+};
 
 use super::{
     package_queue::create_package_queue,
@@ -40,5 +42,5 @@ pub async fn init_session(mut stream: TcpStream) {
 
     let player_stream = create_package_queue(stream).await;
 
-    game_session(player_stream).await;
+    init_process(player_stream).await;
 }
