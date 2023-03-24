@@ -1,6 +1,9 @@
 use serde::{Deserialize, Serialize};
 
-use crate::net::protocol::utils::{buffer_reader::BufferReader, buffer_writer::BufferWriter};
+use crate::{
+    game::shared_constants::{NETWORK_PROTOCOL_VERSION, VERSION_STRING},
+    net::protocol::utils::{buffer_reader::BufferReader, buffer_writer::BufferWriter},
+};
 
 // use crate::{game::online, net::{writer::WritePackage, reader::Reader}};
 
@@ -41,8 +44,8 @@ impl StatusResponse {
     pub fn to_string() -> String {
         let respons = StatusResponse {
             version: StatusResponseVersion {
-                name: "1.19.2".into(),
-                protocol: 760,
+                name: VERSION_STRING.to_string(),
+                protocol: NETWORK_PROTOCOL_VERSION,
             },
             players: StatusResponsePlayers {
                 max: 20,   //online::get_max_online(),
