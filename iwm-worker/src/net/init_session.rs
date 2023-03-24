@@ -23,7 +23,7 @@ pub async fn init_session(mut stream: TcpStream) {
 
     let mut buf = vec![0; size as usize - 1];
     stream.read(&mut buf).await.unwrap();
-    println!("{:?}", LoginStart::from_bytes(buf));
+    println!("{:?}", LoginStart::from_buffer(buf));
 
     stream
         .write(&[
@@ -36,9 +36,6 @@ pub async fn init_session(mut stream: TcpStream) {
 
     stream.write(mock::LOGIN).await.unwrap();
 
-    let mut writer = BufferWriter::new();
-    writer.bytes(&[0x4B, 0x2D, 0x2F]);
-    stream.write(&writer.build()).await.unwrap();
 
     let player_stream = create_package_queue(stream).await;
 

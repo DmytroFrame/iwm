@@ -1,4 +1,5 @@
 use crate::net::protocol::utils::buffer_reader::BufferReader;
+use uuid::Uuid;
 
 #[derive(Debug)]
 pub(crate) struct LoginStart {
@@ -10,11 +11,11 @@ pub(crate) struct LoginStart {
     pub signature_length: Option<i32>,
     pub signature: Option<Vec<u8>>,
     pub has_player_uuid: bool,
-    pub player_uuid: Option<String>,
+    pub player_uuid: Option<Uuid>,
 }
 
 impl LoginStart {
-    pub fn from_bytes(buf: Vec<u8>) -> LoginStart {
+    pub fn from_buffer(buf: Vec<u8>) -> LoginStart {
         let mut reader = BufferReader::new(buf);
 
         let name = reader.string();

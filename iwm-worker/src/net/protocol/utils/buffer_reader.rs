@@ -1,4 +1,5 @@
 use crate::net::protocol::utils::const_bits::{CONTINUE_BIT, SEGMENT_BITS};
+use uuid::Uuid;
 
 pub(crate) struct BufferReader {
     buf: Vec<u8>,
@@ -94,13 +95,24 @@ impl BufferReader {
         String::from_utf8_lossy(&buf).to_string()
     }
 
-    pub fn uuid(&mut self) -> String {
-        let mut result = String::new();
-
-        for byte in self.bytes(16) {
-            result.push_str(&format!("{:x}", byte));
-        }
-
-        result
+    pub fn uuid(&mut self) -> Uuid {
+        uuid::Uuid::from_bytes([
+            self.byte(),
+            self.byte(),
+            self.byte(),
+            self.byte(),
+            self.byte(),
+            self.byte(),
+            self.byte(),
+            self.byte(),
+            self.byte(),
+            self.byte(),
+            self.byte(),
+            self.byte(),
+            self.byte(),
+            self.byte(),
+            self.byte(),
+            self.byte(),
+        ])
     }
 }
