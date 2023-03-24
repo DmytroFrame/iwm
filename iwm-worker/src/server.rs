@@ -15,8 +15,10 @@ use crate::{
     },
 };
 
-pub async fn init_server(_: u16) {
-    let server = TcpListener::bind("0.0.0.0:25565").await.unwrap();
+pub async fn init_server(port: u16) {
+    let server = TcpListener::bind(format!("127.0.0.1:{port}"))
+        .await
+        .unwrap();
 
     loop {
         let (stream, _) = server.accept().await.unwrap();

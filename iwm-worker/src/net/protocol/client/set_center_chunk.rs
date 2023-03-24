@@ -1,4 +1,4 @@
-use crate::{game::player::player_struct::Vec2, net::protocol::utils::buffer_writer::BufferWriter};
+use crate::net::protocol::utils::buffer_writer::BufferWriter;
 
 #[derive(Debug, PartialEq)]
 pub(crate) struct SetCenterChunk {

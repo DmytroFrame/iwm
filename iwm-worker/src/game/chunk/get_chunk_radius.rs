@@ -6,7 +6,7 @@ pub(crate) fn get_chunk_radius(mut x: i32, mut z: i32, radius: u8) -> Vec<Vec2<i
     let mut array_vec2 = Vec::new();
 
     array_vec2.push(Vec2 { x, z });
-    
+
     for index in 0..points {
         use_plus = !use_plus;
 

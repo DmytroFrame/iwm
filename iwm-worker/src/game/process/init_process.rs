@@ -6,6 +6,7 @@ use crate::{
         chunk::get_flat_chunk::get_flat_chunk,
         player::player_struct::{Gamemode, Player, Vec2, Vec3},
     },
+    logger::Logger,
     net::{
         package_queue::PlayerStream,
         protocol::{client::set_center_chunk::SetCenterChunk, package_output::OutputPackage},
@@ -96,6 +97,7 @@ impl Process {
 }
 
 pub(crate) async fn init_process(stream: PlayerStream) {
+    // let Logger::new()
     let player_session = PlayerSession::new(stream);
 
     let mut process = Process {
@@ -107,7 +109,7 @@ pub(crate) async fn init_process(stream: PlayerStream) {
     loop {
         game_process(&mut process).await;
         if process.is_all_disconnected() {
-            println!("off");
+            Logger::new("Process").info("Process is ended");
             break;
         }
     }

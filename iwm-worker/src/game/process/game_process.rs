@@ -2,11 +2,8 @@ use std::time::Duration;
 
 use tokio::time::Instant;
 
-use crate::{
-    game::player::player_struct::Vec2,
-    net::protocol::{
-        client::keep_alive::KeepAlive, package_input::InputPackage, package_output::OutputPackage,
-    },
+use crate::net::protocol::{
+    client::keep_alive::KeepAlive, package_input::InputPackage, package_output::OutputPackage,
 };
 
 use super::init_process::Process;
@@ -78,7 +75,7 @@ pub(super) async fn game_process(process: &mut Process) {
                         session.player.on_ground = payload.on_ground;
                     }
                 }
-                any => {}
+                _ => {}
             }
 
             if Instant::now().duration_since(session.last_keep_alive) > Duration::from_secs(20) {
