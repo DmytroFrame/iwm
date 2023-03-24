@@ -1,6 +1,5 @@
-use std::net::TcpStream;
-
-use crate::net::protocol::package_reader::PackageReader;
+use crate::net::protocol::utils::stream_reader::StreamReader;
+use tokio::{io::ReadHalf, net::TcpStream};
 
 #[derive(Debug)]
 pub(crate) struct SetPlayerRotation {
@@ -10,13 +9,13 @@ pub(crate) struct SetPlayerRotation {
 }
 
 impl SetPlayerRotation {
-    pub fn from(stream: &mut TcpStream) -> SetPlayerRotation {
-        let mut reader = PackageReader::new(stream);
+    pub async fn from_stream(stream: &mut ReadHalf<TcpStream>) -> SetPlayerRotation {
+        let mut reader = StreamReader::new(stream);
 
         SetPlayerRotation {
-            x: reader.f32(),
-            y: reader.f32(),
-            on_ground: reader.bool(),
+            x: reader.f32().await,
+            y: reader.f32().await,
+            on_ground: reader.bool().await,
         }
     }
 }

@@ -17,7 +17,7 @@ impl Logger {
     }
 
     pub fn warn(&self, message: &str) {
-        self.print(" WARN".truecolor(250, 234, 0), message);
+        self.print(" WARN".yellow(), message);
     }
 
     pub fn debug(&self, message: &str) {

@@ -16,12 +16,10 @@ impl ChunkGenerator for ChunkGeneratorService {
         &self,
         request: Request<GetChunkRequest>,
     ) -> Result<Response<GetChunkResponse>, Status> {
-
-        
         println!("Got a request from {:?}", request.remote_addr());
 
         let reply = chunk_generator::GetChunkResponse {
-            data: vec![2; 17000], 
+            data: vec![2; 17000],
         };
         Ok(Response::new(reply))
     }

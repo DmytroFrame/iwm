@@ -1,10 +1,16 @@
+// #[macro_use]
+// extern crate lazy_static;
+
+
 mod game;
 mod logger;
-mod mock;
 mod net;
 mod server;
 
-fn main() {
-    println!("Hello, world!");
-    // server::init_server(25565);
+#[tokio::main(worker_threads = 1)]
+// #[tokio::main]
+async fn main() {
+
+    // console_subscriber::init();
+    server::init_server(25565).await;
 }
