@@ -37,7 +37,7 @@ pub(crate) struct StatusResponse {
 }
 
 impl StatusResponse {
-    pub async fn to_string() -> String {
+    pub async fn to_string(count_of_samples: Option<usize>) -> String {
         let respons = StatusResponse {
             version: StatusResponseVersion {
                 name: VERSION_STRING.to_string(),
@@ -46,7 +46,7 @@ impl StatusResponse {
             players: StatusResponsePlayers {
                 max: online::get_max_online().await,
                 online: online::get_current_online().await,
-                sample: online::get_sample_playes().await,
+                sample: online::get_sample_playes(count_of_samples).await,
             },
             description: StatusResponseDescription {
                 text: "This minecraft server.".into(),
@@ -63,7 +63,7 @@ impl StatusResponse {
         let mut writer = BufferWriter::new();
 
         writer.var_int(0x00);
-        writer.string(Self::to_string().await);
+        writer.string(Self::to_string(Some(10)).await);
 
         writer.build()
     }

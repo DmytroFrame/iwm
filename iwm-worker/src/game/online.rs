@@ -38,6 +38,14 @@ pub async fn minus_online(name: &String) {
     }
 }
 
-pub(crate) async fn get_sample_playes() -> Vec<SamplePlayer> {
-    (*PLAYERS_ONLINE.lock().await.clone()).to_vec()
+pub(crate) async fn get_sample_playes(count: Option<usize>) -> Vec<SamplePlayer> {
+    match count {
+        Some(count) => {
+            let mut players = (*PLAYERS_ONLINE.lock().await.clone()).to_vec();
+            players.truncate(count);
+            players
+        }
+
+        None => (*PLAYERS_ONLINE.lock().await.clone()).to_vec(),
+    }
 }
