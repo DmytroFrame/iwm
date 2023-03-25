@@ -1,4 +1,4 @@
-use crate::game::player::player_struct::Vec2;
+use crate::utils::vec2::Vec2;
 
 pub(crate) fn get_chunk_radius(mut x: i32, mut z: i32, radius: u8) -> Vec<Vec2<i32>> {
     let points = (radius * 2) + 2;

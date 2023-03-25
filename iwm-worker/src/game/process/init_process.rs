@@ -4,7 +4,7 @@ use uuid::Uuid;
 use crate::{
     game::{
         chunk::get_flat_chunk::get_flat_chunk,
-        player::player_struct::{Gamemode, Player, Vec2, Vec3},
+        player::player_struct::{Gamemode, Player},
     },
     logger::Logger,
     net::{
@@ -16,6 +16,7 @@ use crate::{
             package_output::OutputPackage,
         },
     },
+    utils::{vec2::Vec2, vec3::Vec3},
 };
 
 use super::game_process::game_process;

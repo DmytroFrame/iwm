@@ -1,5 +1,7 @@
 use uuid::Uuid;
 
+use crate::utils::{vec2::Vec2, vec3::Vec3};
+
 #[derive(Debug, Clone, Copy)]
 pub(crate) enum Gamemode {
     Survival,
@@ -19,19 +21,6 @@ impl Gamemode {
             Gamemode::None => -1,
         }
     }
-}
-
-#[derive(Debug)]
-pub(crate) struct Vec3<T> {
-    pub x: T,
-    pub y: T,
-    pub z: T,
-}
-
-#[derive(Debug)]
-pub(crate) struct Vec2<T> {
-    pub x: T,
-    pub z: T,
 }
 
 #[derive(Debug)]
