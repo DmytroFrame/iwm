@@ -1,3 +1,5 @@
+use uuid::Uuid;
+
 use crate::net::protocol::utils::const_bits::{CONTINUE_BIT, SEGMENT_BITS};
 
 pub(crate) struct BufferWriter {
@@ -35,12 +37,28 @@ impl BufferWriter {
         self.buf.extend(buf_data);
     }
 
+    pub fn uuid(&mut self, uuid: Uuid) {
+        self.buf.extend(uuid.as_bytes());
+    }
+
     pub fn i32(&mut self, value: i32) {
         self.buf.extend(value.to_be_bytes());
     }
 
     pub fn i64(&mut self, value: i64) {
         self.buf.extend(value.to_be_bytes());
+    }
+
+    pub fn i8(&mut self, value: i8) {
+        self.buf.extend(value.to_be_bytes());
+    }
+
+    pub fn bool(&mut self, value: bool) {
+        if value {
+            self.buf.push(0x01);
+        } else {
+            self.buf.push(0x00);
+        }
     }
 
     pub fn build(&mut self) -> Vec<u8> {

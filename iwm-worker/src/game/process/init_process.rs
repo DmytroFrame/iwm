@@ -9,7 +9,12 @@ use crate::{
     logger::Logger,
     net::{
         package_queue::PlayerStream,
-        protocol::{client::play::set_center_chunk::SetCenterChunk, package_output::OutputPackage},
+        protocol::{
+            client::play::{
+                set_center_chunk::SetCenterChunk, set_render_distance::SetRenderDistance,
+            },
+            package_output::OutputPackage,
+        },
     },
 };
 
@@ -97,7 +102,6 @@ impl Process {
 }
 
 pub(crate) async fn init_process(stream: PlayerStream) {
-    // let Logger::new()
     let player_session = PlayerSession::new(stream);
 
     let mut process = Process {
@@ -105,6 +109,14 @@ pub(crate) async fn init_process(stream: PlayerStream) {
         events: vec![],
         chunks: vec![],
     };
+
+    let d = SetRenderDistance { view_distance: 32 };
+    process.players[0]
+        .stream
+        .output
+        .send(OutputPackage::SetRenderDistance(d))
+        .await
+        .unwrap();
 
     loop {
         game_process(&mut process).await;

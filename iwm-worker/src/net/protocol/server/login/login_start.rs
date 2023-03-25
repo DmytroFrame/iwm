@@ -3,7 +3,7 @@ use uuid::Uuid;
 
 #[derive(Debug)]
 pub(crate) struct LoginStart {
-    pub name: String,
+    pub username: String,
     pub has_sig_data: bool,
     pub timestamp: Option<i64>,
     pub public_key_length: Option<i32>,
@@ -18,7 +18,7 @@ impl LoginStart {
     pub fn from_buffer(buf: Vec<u8>) -> LoginStart {
         let mut reader = BufferReader::new(buf);
 
-        let name = reader.string();
+        let username = reader.string();
         let has_sig_data = reader.bool();
         let (
             mut timestamp,
@@ -44,7 +44,7 @@ impl LoginStart {
         }
 
         LoginStart {
-            name,
+            username,
             has_sig_data,
             timestamp,
             public_key_length,

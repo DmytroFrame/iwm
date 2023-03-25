@@ -1,11 +1,24 @@
 use uuid::Uuid;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub(crate) enum Gamemode {
     Survival,
     Creative,
     Adventure,
     Spectator,
+    None,
+}
+
+impl Gamemode {
+    pub fn as_i8(&self) -> i8 {
+        match self {
+            Gamemode::Survival => 0,
+            Gamemode::Creative => 1,
+            Gamemode::Adventure => 2,
+            Gamemode::Spectator => 3,
+            Gamemode::None => -1,
+        }
+    }
 }
 
 #[derive(Debug)]
