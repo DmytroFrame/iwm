@@ -2,10 +2,8 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     game::shared_constants::{NETWORK_PROTOCOL_VERSION, VERSION_STRING},
-    net::protocol::utils::{buffer_reader::BufferReader, buffer_writer::BufferWriter},
+    net::protocol::utils::buffer_writer::BufferWriter,
 };
-
-// use crate::{game::online, net::{writer::WritePackage, reader::Reader}};
 
 #[derive(Serialize, Deserialize)]
 pub(crate) struct StatusResponseVersion {
@@ -62,17 +60,13 @@ impl StatusResponse {
 
         serde_json::to_string(&respons).unwrap()
     }
-}
 
-pub fn pong(value: i64) -> Vec<u8> {
-    let mut package = BufferWriter::new();
-    package.byte(0x01);
-    package.i64(value);
-    package.build()
-}
+    pub fn to_bytes() -> Vec<u8> {
+        let mut writer = BufferWriter::new();
 
-pub fn ping(buf: Vec<u8>) -> i64 {
-    let mut package = BufferReader::new(buf);
-    package.byte();
-    package.i64()
+        writer.var_int(0x00);
+        writer.string(Self::to_string());
+
+        writer.build()
+    }
 }

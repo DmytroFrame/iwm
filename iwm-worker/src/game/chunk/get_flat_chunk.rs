@@ -1,4 +1,4 @@
-use crate::net::protocol::client::chunk_data_and_update_light::ChunkDataAndUpdateLight;
+use crate::net::protocol::client::play::chunk_data_and_update_light::ChunkDataAndUpdateLight;
 
 const FLAT_CHUNK: &[u8; 9091] = include_bytes!("flat_chunk.bin");
 

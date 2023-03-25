@@ -2,8 +2,12 @@ use std::time::Duration;
 
 use tokio::time::Instant;
 
-use crate::net::protocol::{
-    client::keep_alive::KeepAlive, package_input::InputPackage, package_output::OutputPackage,
+use crate::{
+    logger::Logger,
+    net::protocol::{
+        client::play::keep_alive::KeepAlive, package_input::InputPackage,
+        package_output::OutputPackage,
+    },
 };
 
 use super::init_process::Process;
@@ -75,6 +79,13 @@ pub(super) async fn game_process(process: &mut Process) {
                         session.player.on_ground = payload.on_ground;
                     }
                 }
+
+                InputPackage::ChatMessage(payload) => Logger::new("ChatMessage")
+                    .info(&format!("{}: {}", session.player.username, payload.message)),
+
+                InputPackage::ChatCommand(payload) => Logger::new("ChatCommand")
+                    .info(&format!("{}: {}", session.player.username, payload.message)),
+
                 _ => {}
             }
 

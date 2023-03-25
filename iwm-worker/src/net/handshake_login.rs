@@ -5,12 +5,12 @@ use tokio::{
 
 use crate::{
     game::process::init_process::init_process,
-    net::protocol::{server::login_start::LoginStart, utils::package_header::PackageHeader},
+    net::protocol::{server::login::login_start::LoginStart, utils::package_header::PackageHeader},
 };
 
 use super::{package_queue::create_package_queue, protocol::mock};
 
-pub async fn init_session(mut stream: TcpStream) {
+pub async fn handshake_login(mut stream: TcpStream) {
     let header = PackageHeader::from_steam(&mut stream).await.unwrap();
 
     let mut buf = vec![0; header.size as usize - 1];

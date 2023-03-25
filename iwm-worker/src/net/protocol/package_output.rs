@@ -1,4 +1,4 @@
-use super::client::{
+use super::client::play::{
     chunk_data_and_update_light::ChunkDataAndUpdateLight, keep_alive::KeepAlive,
     set_center_chunk::SetCenterChunk,
 };
@@ -13,7 +13,9 @@ pub(crate) enum OutputPackage {
 pub(crate) async fn output_package_handle(package: OutputPackage) -> Vec<u8> {
     match package {
         OutputPackage::SetCenterChunk(payload) => payload.to_bytes(),
+
         OutputPackage::KeepAlive(payload) => payload.to_bytes(),
+
         OutputPackage::ChunkDataAndUpdateLight(payload) => payload.to_bytes(),
     }
 }

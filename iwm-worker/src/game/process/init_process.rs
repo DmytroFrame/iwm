@@ -9,7 +9,7 @@ use crate::{
     logger::Logger,
     net::{
         package_queue::PlayerStream,
-        protocol::{client::set_center_chunk::SetCenterChunk, package_output::OutputPackage},
+        protocol::{client::play::set_center_chunk::SetCenterChunk, package_output::OutputPackage},
     },
 };
 
@@ -32,7 +32,7 @@ impl PlayerSession {
             is_disconnected: false,
             player: Player {
                 entity_id: 1,
-                username: String::new(),
+                username: String::from("DmytroFrame"),
                 uuid: Uuid::new_v4(),
                 gamemode: Gamemode::Survival,
                 position: Vec3 {
@@ -108,6 +108,7 @@ pub(crate) async fn init_process(stream: PlayerStream) {
 
     loop {
         game_process(&mut process).await;
+
         if process.is_all_disconnected() {
             Logger::new("Process").info("Process is ended");
             break;
