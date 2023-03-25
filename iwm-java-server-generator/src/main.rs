@@ -11,5 +11,5 @@ use java_server::java_server;
 async fn main() {
     java_server().await;
 
-    grpc_server().await;
+    grpc_server().await.unwrap();
 }
