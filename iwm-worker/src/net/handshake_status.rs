@@ -11,7 +11,10 @@ use super::protocol::{
 pub async fn handshake_status(mut stream: TcpStream) {
     stream.read(&mut [0; 2]).await.unwrap();
 
-    stream.write(&StatusResponse::to_bytes()).await.unwrap();
+    stream
+        .write(&StatusResponse::to_bytes().await)
+        .await
+        .unwrap();
 
     let mut buf: [u8; 10] = [0; 10];
     stream.read(&mut buf).await.unwrap();

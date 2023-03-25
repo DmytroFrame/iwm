@@ -4,6 +4,7 @@ use uuid::Uuid;
 use crate::{
     game::{
         chunk::get_flat_chunk::get_flat_chunk,
+        online,
         player::player_struct::{Gamemode, Player},
     },
     logger::Logger,
@@ -30,7 +31,7 @@ pub(super) struct PlayerSession {
 }
 
 impl PlayerSession {
-    pub fn new(stream: PlayerStream) -> PlayerSession {
+    pub fn new(stream: PlayerStream, username: String, uuid: Uuid) -> PlayerSession {
         PlayerSession {
             stream,
             chunk_center: Vec2 { x: 2, z: 0 },
@@ -38,8 +39,8 @@ impl PlayerSession {
             is_disconnected: false,
             player: Player {
                 entity_id: 1,
-                username: String::from("DmytroFrame"),
-                uuid: Uuid::new_v4(),
+                username,
+                uuid,
                 gamemode: Gamemode::Survival,
                 position: Vec3 {
                     x: 0.0,
@@ -102,8 +103,8 @@ impl Process {
     }
 }
 
-pub(crate) async fn init_process(stream: PlayerStream) {
-    let player_session = PlayerSession::new(stream);
+pub(crate) async fn init_process(stream: PlayerStream, username: String, uuid: Uuid) {
+    let player_session = PlayerSession::new(stream, username, uuid);
 
     let mut process = Process {
         players: vec![player_session],
@@ -124,6 +125,7 @@ pub(crate) async fn init_process(stream: PlayerStream) {
 
         if process.is_all_disconnected() {
             Logger::new("Process").info("Process is ended");
+            online::minus_online(&process.players[0].player.username).await;
             break;
         }
     }

@@ -1,7 +1,10 @@
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    game::shared_constants::{NETWORK_PROTOCOL_VERSION, VERSION_STRING},
+    game::{
+        online,
+        shared_constants::{NETWORK_PROTOCOL_VERSION, VERSION_STRING},
+    },
     net::protocol::utils::buffer_writer::BufferWriter,
 };
 
@@ -11,15 +14,10 @@ pub(crate) struct StatusResponseVersion {
     pub protocol: i32,
 }
 #[derive(Serialize, Deserialize)]
-pub(crate) struct StatusResponsePlayersSample {
-    pub name: String,
-    pub id: String,
-}
-#[derive(Serialize, Deserialize)]
 pub(crate) struct StatusResponsePlayers {
     pub max: i32,
     pub online: i32,
-    pub sample: Vec<StatusResponsePlayersSample>,
+    pub sample: Vec<online::SamplePlayer>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -39,16 +37,16 @@ pub(crate) struct StatusResponse {
 }
 
 impl StatusResponse {
-    pub fn to_string() -> String {
+    pub async fn to_string() -> String {
         let respons = StatusResponse {
             version: StatusResponseVersion {
                 name: VERSION_STRING.to_string(),
                 protocol: NETWORK_PROTOCOL_VERSION,
             },
             players: StatusResponsePlayers {
-                max: 20,   //online::get_max_online(),
-                online: 0, //"online::get_curent_online()",
-                sample: Vec::new(),
+                max: online::get_max_online().await,
+                online: online::get_current_online().await,
+                sample: online::get_sample_playes().await,
             },
             description: StatusResponseDescription {
                 text: "This minecraft server.".into(),
@@ -61,11 +59,11 @@ impl StatusResponse {
         serde_json::to_string(&respons).unwrap()
     }
 
-    pub fn to_bytes() -> Vec<u8> {
+    pub async fn to_bytes() -> Vec<u8> {
         let mut writer = BufferWriter::new();
 
         writer.var_int(0x00);
-        writer.string(Self::to_string());
+        writer.string(Self::to_string().await);
 
         writer.build()
     }
