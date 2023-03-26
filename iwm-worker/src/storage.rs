@@ -33,8 +33,9 @@ pub async fn write_file(path: &String, data: String) -> Result<()> {
     create_folders().await?;
 
     let mut file = OpenOptions::new()
-        .create(true)
         .write(true)
+        .truncate(true)
+        .create(true)
         .open(path)
         .await
         .expect("Не вдалося відкрити файл");
