@@ -3,6 +3,7 @@ use std::time::Duration;
 use tokio::time::Instant;
 
 use crate::{
+    game::player::save_player::save_player,
     logger::Logger,
     net::protocol::{
         client::play::keep_alive::KeepAlive, package_input::InputPackage,
@@ -18,6 +19,7 @@ pub(super) async fn game_process(process: &mut Process) {
             match message {
                 InputPackage::Disconnect => {
                     session.is_disconnected = true;
+                    save_player(&session.player).await;
                     break;
                 }
 

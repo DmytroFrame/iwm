@@ -1,23 +1,19 @@
 use tokio::time::Instant;
-use uuid::Uuid;
 
 use crate::{
-    game::{
-        chunk::get_flat_chunk::get_flat_chunk,
-        online,
-        player::player_struct::{Gamemode, Player},
-    },
+    game::{chunk::get_flat_chunk::get_flat_chunk, online, player::player_struct::Player},
     logger::Logger,
     net::{
         package_queue::PlayerStream,
         protocol::{
             client::play::{
                 set_center_chunk::SetCenterChunk, set_render_distance::SetRenderDistance,
+                synchronize_player_position::SynchronizePlayerPosition,
             },
             package_output::OutputPackage,
         },
     },
-    utils::{vec2::Vec2, vec3::Vec3},
+    utils::vec2::Vec2,
 };
 
 use super::game_process::game_process;
@@ -31,26 +27,13 @@ pub(super) struct PlayerSession {
 }
 
 impl PlayerSession {
-    pub fn new(stream: PlayerStream, username: String, uuid: Uuid) -> PlayerSession {
+    pub fn new(stream: PlayerStream, player: Player) -> PlayerSession {
         PlayerSession {
             stream,
             chunk_center: Vec2 { x: 2, z: 0 },
             last_keep_alive: Instant::now(),
             is_disconnected: false,
-            player: Player {
-                entity_id: 1,
-                username,
-                uuid,
-                gamemode: Gamemode::Survival,
-                position: Vec3 {
-                    x: 0.0,
-                    y: 0.0,
-                    z: 0.0,
-                },
-                rotation: Vec2 { x: 0.0, z: 0.0 },
-                on_ground: true,
-                health: 20.0,
-            },
+            player,
         }
     }
 
@@ -103,8 +86,8 @@ impl Process {
     }
 }
 
-pub(crate) async fn init_process(stream: PlayerStream, username: String, uuid: Uuid) {
-    let player_session = PlayerSession::new(stream, username, uuid);
+pub(crate) async fn init_process(stream: PlayerStream, player: Player) {
+    let player_session = PlayerSession::new(stream, player);
 
     let mut process = Process {
         players: vec![player_session],
@@ -112,11 +95,21 @@ pub(crate) async fn init_process(stream: PlayerStream, username: String, uuid: U
         chunks: vec![],
     };
 
-    let d = SetRenderDistance { view_distance: 32 };
     process.players[0]
         .stream
         .output
-        .send(OutputPackage::SetRenderDistance(d))
+        .send(OutputPackage::SetRenderDistance(SetRenderDistance {
+            view_distance: 32,
+        }))
+        .await
+        .unwrap();
+
+    process.players[0]
+        .stream
+        .output
+        .send(OutputPackage::SynchronizePlayerPosition(
+            SynchronizePlayerPosition::from_player(&process.players[0].player),
+        ))
         .await
         .unwrap();
 

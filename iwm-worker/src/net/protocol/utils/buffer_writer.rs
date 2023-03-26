@@ -49,6 +49,14 @@ impl BufferWriter {
         self.buf.extend(value.to_be_bytes());
     }
 
+    pub fn f32(&mut self, value: f32) {
+        self.buf.extend(value.to_be_bytes());
+    }
+
+    pub fn f64(&mut self, value: f64) {
+        self.buf.extend(value.to_be_bytes());
+    }
+
     pub fn i8(&mut self, value: i8) {
         self.buf.extend(value.to_be_bytes());
     }

@@ -1,8 +1,9 @@
+use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 use crate::utils::{vec2::Vec2, vec3::Vec3};
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub(crate) enum Gamemode {
     Survival,
     Creative,
@@ -23,7 +24,7 @@ impl Gamemode {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub(crate) struct Player {
     pub entity_id: i32,
     pub username: String,
