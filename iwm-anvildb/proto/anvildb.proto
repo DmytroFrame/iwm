@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package anvildb;
+
+
+service Anvildb {
+    rpc GetPlayer (GetPlayerByUuid) returns (Player);
+    rpc SetPlayer (Player) returns (Empty);
+}
+
+message Empty {}
+
+message GetPlayerByUuid {
+    string uuid = 1;
+}
+
+message Player {
+    string username = 1;
+    string uuid = 2;
+    Gamemode gamemode = 3;
+    Position position = 4;
+    Rotation rotation = 5;
+    bool on_ground = 6;
+    float health = 7;
+}
+
+enum Gamemode {
+    Survival = 0;
+    Creative = 1;
+    Adventure = 2;
+    Spectator = 3;
+}
+
+message Position {
+    double x = 1;
+    double y = 2;
+    double z = 3;
+}
+
+message Rotation {
+    float x = 1;
+    float z = 2;
+}

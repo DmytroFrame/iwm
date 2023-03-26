@@ -1,41 +1,63 @@
-use tonic::{transport::Server, Request, Response, Status};
+// use tonic::{transport::Server, Request, Response, Status};
 
-use hello_world::greeter_server::{Greeter, GreeterServer};
-use hello_world::{HelloReply, HelloRequest};
+// use anvildb::anvildb_server::{Anvildb, AnvildbServer};
+// use anvildb::{Empty, GetPlayerByUuid, Player};
 
-pub mod hello_world {
-    tonic::include_proto!("helloworld");
-}
+// mod anvildb {
+//     tonic::include_proto!("anvildb");
+// }
 
-#[derive(Default)]
-pub struct MyGreeter {}
+// // #[derive(Default)]
+// // pub struct MyGreeter {}
 
-#[tonic::async_trait]
-impl Greeter for MyGreeter {
-    async fn say_hello(
-        &self,
-        request: Request<HelloRequest>,
-    ) -> Result<Response<HelloReply>, Status> {
-        println!("Got a request from {:?}", request.remote_addr());
+// // #[tonic::async_trait]
+// // impl Anvildb for MyGreeter {
+// //     async fn get_player(
+// //         &self,
+// //         request: Request<GetPlayerByUuid>,
+// //     ) -> Result<Response<Player>, Status> {
+// //     }
 
-        let reply = hello_world::HelloReply {
-            message: format!("Hello {}!", request.into_inner().name),
-        };
-        Ok(Response::new(reply))
-    }
-}
+// //     async fn set_player(&self, request: Request<Player>) -> Result<Response<Empty>, Status> {
+// //         Ok(Response::new(Empty {}))
+// //     }
 
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let addr = "[::1]:50051".parse().unwrap();
-    let greeter = MyGreeter::default();
+// //     // ) -> Result<Response<HelloReply>, Status> {
+// //     //     println!("Got a request from {:?}", request.remote_addr());
 
-    println!("GreeterServer listening on {}", addr);
+// //     //     let reply = hello_world::HelloReply {
+// //     //         message: format!("Hello {}!", request.into_inner().name),
+// //     //     };
+// //     //     Ok(Response::new(reply))
+// //     // }
+// // }
 
-    Server::builder()
-        .add_service(GreeterServer::new(greeter))
-        .serve(addr)
-        .await?;
+// // #[tokio::main]
+// // async fn main() -> Result<(), Box<dyn std::error::Error>> {
+// //     let addr = "[::1]:50051".parse().unwrap();
+// //     let greeter = MyGreeter::default();
 
-    Ok(())
+// //     println!("GreeterServer listening on {}", addr);
+
+// //     Server::builder()
+// //         .add_service(AnvildbServer::new(greeter))
+// //         .serve(addr)
+// //         .await?;
+
+// //     Ok(())
+// // }
+
+// mod service;
+// mod storage;
+
+#[tokio::main(worker_threads = 1)]
+async fn main() {
+
+    // let path = String::from("players/kek.json");
+    // let data = String::from("hi world");
+
+    // storage::write_file(&path, data).await.unwrap();
+
+    // let result =  storage::read_file(&path).await.unwrap();
+    // println!("{}", result);
 }
