@@ -45,7 +45,7 @@ pub(crate) fn input_package_handle(id: i32, buffer: Vec<u8>) -> InputPackage {
                 raw_data: buffer,
             };
 
-            Logger::new("ReaderIO").error(&format!(
+            Logger::new("Unknown").warn(&format!(
                 "size: {} id: 0x{:X}, data: {:02X?}",
                 unknown.size, unknown.id, unknown.raw_data
             ));

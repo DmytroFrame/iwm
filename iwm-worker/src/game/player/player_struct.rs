@@ -3,7 +3,7 @@ use uuid::Uuid;
 
 use crate::utils::{vec2::Vec2, vec3::Vec3};
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
 pub(crate) enum Gamemode {
     Survival,
     Creative,

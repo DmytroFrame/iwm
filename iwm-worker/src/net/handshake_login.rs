@@ -1,5 +1,7 @@
 use crate::{
-    game::{online, player::get_player::get_player, process::init_process::init_process},
+    game::{
+        online, player::get_player::get_player, process::init_player_session::init_player_session,
+    },
     net::protocol::{
         client::login::login_success::LoginSuccess, server::login::login_start::LoginStart,
         utils::package_header::PackageHeader,
@@ -31,5 +33,5 @@ pub async fn handshake_login(mut stream: TcpStream) {
     let player_stream = create_package_queue(stream).await;
     online::add_online(&player.username, &player.uuid).await;
 
-    init_process(player_stream, player).await;
+    init_player_session(player_stream, player).await;
 }

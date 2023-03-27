@@ -26,7 +26,7 @@ pub(crate) async fn get_player(username: &str) -> Player {
         Some(player) => player,
 
         None => Player {
-            entity_id: 7,
+            entity_id: rand::random::<i32>(),
             username: username.to_string(),
             uuid,
             gamemode: super::player_struct::Gamemode::Creative,

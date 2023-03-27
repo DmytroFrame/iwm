@@ -61,6 +61,10 @@ impl BufferWriter {
         self.buf.extend(value.to_be_bytes());
     }
 
+    pub fn u8(&mut self, value: u8) {
+        self.buf.extend(value.to_be_bytes());
+    }
+
     pub fn bool(&mut self, value: bool) {
         if value {
             self.buf.push(0x01);
