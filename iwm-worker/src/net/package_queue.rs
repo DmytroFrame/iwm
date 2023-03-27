@@ -67,7 +67,13 @@ async fn writer_loop(mut stream_rx: WriteHalf<TcpStream>, mut writer_rx: Receive
                 }
 
                 let buffer = output_package_handle(package).await;
-                stream_rx.write(&buffer).await.unwrap();
+                match stream_rx.write(&buffer).await {
+                    Ok(_) => {}
+                    Err(_) => {
+                        Logger::new("WriterIO").warn("errror on write socket");
+                        break;
+                    }
+                }
             }
         }
     }

@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use tokio::sync::{mpsc::Sender, Mutex};
 
-use crate::{game::online::SamplePlayer, utils::vec2::Vec2};
+use crate::game::online::SamplePlayer;
 
 use super::process::init_player_session::PlayerSession;
 

@@ -1,9 +1,12 @@
+use std::time::Duration;
+
 use tokio::time::Instant;
 
 use crate::{
     game::{
         chunk::{
             chunk_owner::{get_chunk_owner, set_chunk_owner},
+            get_chunk_tracer::get_chunk_tracer,
             get_flat_chunk::get_flat_chunk,
         },
         player::player_struct::Player,
@@ -66,15 +69,16 @@ impl PlayerSession {
         let current_x = self.chunk_center.x.clone();
         let current_z = self.chunk_center.z.clone();
 
-        set_chunk_owner((current_x, current_z), self.player.entity_id).await;
+        for Vec2 { x, z } in get_chunk_tracer(current_x, current_z, 32) {
+            tokio::time::sleep(Duration::from_millis(20)).await;
+            set_chunk_owner((x, z), self.player.entity_id).await;
 
-        self.stream
-            .output
-            .send(OutputPackage::ChunkDataAndUpdateLight(get_flat_chunk(
-                current_x, current_z,
-            )))
-            .await
-            .unwrap();
+            self.stream
+                .output
+                .send(OutputPackage::ChunkDataAndUpdateLight(get_flat_chunk(x, z)))
+                .await
+                .unwrap();
+        }
     }
 }
 
