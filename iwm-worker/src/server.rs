@@ -14,9 +14,11 @@ use crate::{
 };
 
 pub async fn init_server(port: u16) {
-    let server = TcpListener::bind(format!("127.0.0.1:{port}"))
-        .await
-        .unwrap();
+    let addr = format!("127.0.0.1:{port}");
+
+    let server = TcpListener::bind(&addr).await.unwrap();
+
+    Logger::new("iWM-Worker:Service").info(&format!("Server start on: {}", addr));
 
     loop {
         let (stream, _) = server.accept().await.unwrap();
