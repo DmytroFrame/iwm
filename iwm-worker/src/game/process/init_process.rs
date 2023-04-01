@@ -2,17 +2,20 @@ use std::time::Duration;
 
 use tokio::{sync::mpsc::Receiver, time::Instant};
 
-use crate::{game::online, logger::Logger};
+use crate::{
+    game::{event::manager::EventMenager, online},
+    logger::Logger,
+};
 
 use super::{
     game_process::game_process, init_player_session::PlayerSession,
     process_channels::process_registration,
 };
 
-pub(super) struct Process {
+pub(crate) struct Process {
     pub players: Vec<PlayerSession>,
-    pub events: Vec<String>,
-    pub chunks: Vec<String>,
+    // pub events: EventMenager,
+    // pub chunks: Vec<String>,
     pub session_queue: Receiver<PlayerSession>,
 }
 
@@ -26,10 +29,15 @@ impl Process {
         return true;
     }
 
-    pub async fn is_there_new_session(&mut self) {
+    pub async fn is_there_new_session(&mut self, event: &mut EventMenager) {
         match self.session_queue.try_recv() {
             Ok(session) => {
+                let id = session.player.entity_id;
+
                 self.players.push(session);
+                println!("New Player Event");
+                event.add_event(crate::game::event::events::Events::PlayerJoin, id);
+                // self.
 
                 println!("\nNew session!\n");
             }
@@ -37,25 +45,38 @@ impl Process {
             Err(_) => {}
         };
     }
+
+    pub fn get_palyer_by_id(&self, id: i32) -> Option<&PlayerSession> {
+        for player in &self.players {
+            if player.player.entity_id == id {
+                return Some(player);
+            }
+        }
+        return None;
+    }
 }
 
 pub(crate) async fn init_process(player_session: PlayerSession) {
     let session_queue = process_registration(player_session.player.entity_id).await;
 
+    let mut event = EventMenager::new();
     let mut process = Process {
         players: vec![player_session],
-        events: vec![],
-        chunks: vec![],
+        // chunks: vec![],
         session_queue,
     };
+
+    process.players[0].init_event_handlers(&mut event);
 
     loop {
         // let start  = Instant::now();
         // println!("game_process");
-        game_process(&mut process).await;
+        game_process(&mut process, &mut event).await;
+
+        event.run_all(&mut process).await;
 
         // println!("is_there_new_session");
-        process.is_there_new_session().await;
+        process.is_there_new_session(&mut event).await;
 
         // println!("is_all_disconnected");
         if process.is_all_disconnected() {

@@ -3,6 +3,7 @@ use super::client::play::{
     player_info::PlayerInfo, set_center_chunk::SetCenterChunk,
     set_render_distance::SetRenderDistance, spawn_player::SpawnPlayer,
     synchronize_player_position::SynchronizePlayerPosition,
+    update_entity_position::UpdateEntityPosition,
 };
 
 #[derive(Debug, PartialEq)]
@@ -14,6 +15,7 @@ pub(crate) enum OutputPackage {
     SpawnPlayer(SpawnPlayer),
     SynchronizePlayerPosition(SynchronizePlayerPosition),
     PlayerInfo(PlayerInfo),
+    UpdateEntityPosition(UpdateEntityPosition),
 }
 
 pub(crate) async fn output_package_handle(package: OutputPackage) -> Vec<u8> {
@@ -31,5 +33,7 @@ pub(crate) async fn output_package_handle(package: OutputPackage) -> Vec<u8> {
         OutputPackage::SynchronizePlayerPosition(payload) => payload.to_bytes(),
 
         OutputPackage::PlayerInfo(payload) => payload.to_bytes(),
+
+        OutputPackage::UpdateEntityPosition(payload) => payload.to_bytes(),
     }
 }

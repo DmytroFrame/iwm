@@ -6,3 +6,4 @@ pub mod set_center_chunk;
 pub mod set_render_distance;
 pub mod spawn_player;
 pub mod synchronize_player_position;
+pub mod update_entity_position;

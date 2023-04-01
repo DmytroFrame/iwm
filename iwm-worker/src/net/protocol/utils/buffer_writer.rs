@@ -41,6 +41,10 @@ impl BufferWriter {
         self.buf.extend(uuid.as_bytes());
     }
 
+    pub fn i16(&mut self, value: i16) {
+        self.buf.extend(value.to_be_bytes());
+    }
+
     pub fn i32(&mut self, value: i32) {
         self.buf.extend(value.to_be_bytes());
     }

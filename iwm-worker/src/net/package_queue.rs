@@ -9,6 +9,7 @@ use tokio::sync::mpsc::{channel, Receiver, Sender};
 
 const MAX_PACKETS_IN_QUEUE: usize = 200;
 
+#[derive(Debug)]
 pub(crate) struct PlayerStream {
     pub input: Receiver<InputPackage>,
     pub output: Sender<OutputPackage>,

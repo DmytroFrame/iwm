@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Formator Package Names</title>
+  </head>
+  <body>
+    <p>Write the desired name</p>
+    <input type="text" id="input" />
+    <div id="file-name"></div>
+    <div id="struct-name"></div>
+
+    <script>
+      const INPUT = document.getElementById("input");
+      const FILE_NAME = document.getElementById("file-name");
+      const STRUCT_NAME = document.getElementById("struct-name");
+
+      INPUT.addEventListener("change", (event) => {
+        const text = event.target.value;
+
+        FILE_NAME.innerText =
+          "File name: " + text.replaceAll(" ", "_").toLocaleLowerCase() + ".rs";
+
+        STRUCT_NAME.innerText = "Struct name: " + text.replaceAll(" ", "");
+      });
+    </script>
+  </body>
+</html>

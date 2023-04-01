@@ -2,18 +2,21 @@ use std::time::Duration;
 
 use tokio::time::Instant;
 
-use crate::net::protocol::{
-    client::play::{keep_alive::KeepAlive, player_info::PlayerInfo, spawn_player::SpawnPlayer},
-    package_output::OutputPackage,
+use crate::{
+    game::event::manager::EventMenager,
+    net::protocol::{
+        client::play::{keep_alive::KeepAlive, player_info::PlayerInfo, spawn_player::SpawnPlayer},
+        package_output::OutputPackage,
+    },
 };
 
 use super::{handle_input_package::handle_input_package, init_process::Process};
 
-pub(super) async fn game_process(process: &mut Process) {
-    let mut last_eid: i32 = 0;
+pub(super) async fn game_process(process: &mut Process, event: &mut EventMenager) {
+    // let mut last_eid: i32 = 0;
 
     for session in &mut process.players {
-        last_eid = session.player.entity_id;
+        // last_eid = session.player.entity_id;
 
         loop {
             match session.stream.input.try_recv() {
@@ -21,7 +24,7 @@ pub(super) async fn game_process(process: &mut Process) {
 
                 Ok(message) => {
                     // println!("message: {:?}", message);
-                    handle_input_package(message, session).await;
+                    handle_input_package(message, session, event).await;
                 }
             }
         }
@@ -36,25 +39,25 @@ pub(super) async fn game_process(process: &mut Process) {
         }
     }
 
-    if last_eid != process.players[0].player.entity_id {
-        process.players[0]
-            .stream
-            .output
-            .send(OutputPackage::PlayerInfo(PlayerInfo::from_player(
-                &process.players[1].player,
-            )))
-            .await
-            .unwrap();
+    // if last_eid != process.players[0].player.entity_id {
+    //     process.players[0]
+    //         .stream
+    //         .output
+    //         .send(OutputPackage::PlayerInfo(PlayerInfo::from_player(
+    //             &process.players[1].player,
+    //         )))
+    //         .await
+    //         .unwrap();
 
-        // println!("{:02X?}", PlayerInfo::from_player(&process.players[1].player).to_bytes());
+    //     // println!("{:02X?}", PlayerInfo::from_player(&process.players[1].player).to_bytes());
 
-        process.players[0]
-            .stream
-            .output
-            .send(OutputPackage::SpawnPlayer(SpawnPlayer::from_player(
-                &process.players[1].player,
-            )))
-            .await
-            .unwrap();
-    }
+    //     process.players[0]
+    //         .stream
+    //         .output
+    //         .send(OutputPackage::SpawnPlayer(SpawnPlayer::from_player(
+    //             &process.players[1].player,
+    //         )))
+    //         .await
+    //         .unwrap();
+    // }
 }

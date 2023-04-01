@@ -1,14 +1,15 @@
 use crate::{
-    game::player::save_player::save_player, logger::Logger,
+    game::{event::manager::EventMenager, player::save_player::save_player},
+    logger::Logger,
     net::protocol::package_input::InputPackage,
 };
 
-use super::{init_player_session::PlayerSession, init_process::Process};
+use super::init_player_session::PlayerSession;
 
 pub(super) async fn handle_input_package(
     message: InputPackage,
     session: &mut PlayerSession,
-    // process: &mut Process,
+    event: &mut EventMenager, // process: &mut Process,
 ) {
     match message {
         InputPackage::Disconnect => {
@@ -52,10 +53,19 @@ pub(super) async fn handle_input_package(
                     session.player.on_ground,
                 )
             {
+                session.previous_position.x = session.player.position.x;
+                session.previous_position.y = session.player.position.y;
+                session.previous_position.z = session.player.position.z;
+
                 session.player.position.x = payload.x;
                 session.player.position.y = payload.y;
                 session.player.position.z = payload.z;
                 session.player.on_ground = payload.on_ground;
+
+                event.add_event(
+                    crate::game::event::events::Events::UpdateEntityPosition,
+                    session.player.entity_id,
+                );
 
                 session.check_chunk_center().await;
             }

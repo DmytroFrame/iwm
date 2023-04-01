@@ -9,7 +9,14 @@ use crate::{
             get_chunk_tracer::get_chunk_tracer,
             get_flat_chunk::get_flat_chunk,
         },
-        player::player_struct::Player,
+        event::manager::EventMenager,
+        player::{
+            events::{
+                join_player::join_player_handler,
+                update_entity_position::update_entity_position_handler,
+            },
+            player_struct::Player,
+        },
     },
     net::{
         package_queue::PlayerStream,
@@ -21,13 +28,15 @@ use crate::{
             package_output::OutputPackage,
         },
     },
-    utils::vec2::Vec2,
+    utils::{vec2::Vec2, vec3::Vec3},
 };
 
 use super::{init_process::init_process, process_channels::send_session_to_process};
 
+#[derive(Debug)]
 pub(crate) struct PlayerSession {
     pub player: Player,
+    pub previous_position: Vec3<f64>,
     pub stream: PlayerStream,
     pub last_keep_alive: Instant,
     pub chunk_center: Vec2<i32>,
@@ -41,6 +50,11 @@ impl PlayerSession {
             chunk_center: Vec2 { x: 2, z: 0 },
             last_keep_alive: Instant::now(),
             is_disconnected: false,
+            previous_position: Vec3 {
+                x: player.position.x,
+                y: player.position.y,
+                z: player.position.z,
+            },
             player,
         }
     }
@@ -69,7 +83,7 @@ impl PlayerSession {
         let current_x = self.chunk_center.x.clone();
         let current_z = self.chunk_center.z.clone();
 
-        for Vec2 { x, z } in get_chunk_tracer(current_x, current_z, 32) {
+        for Vec2 { x, z } in get_chunk_tracer(current_x, current_z, 3) {
             tokio::time::sleep(Duration::from_millis(20)).await;
             set_chunk_owner((x, z), self.player.entity_id).await;
 
@@ -79,6 +93,24 @@ impl PlayerSession {
                 .await
                 .unwrap();
         }
+    }
+
+    pub fn init_event_handlers(&mut self, event: &mut EventMenager) {
+        println!("init player Handler");
+
+        let id = self.player.entity_id;
+
+        event.add_handler(
+            crate::game::event::events::Events::PlayerJoin,
+            id,
+            join_player_handler,
+        );
+
+        event.add_handler(
+            crate::game::event::events::Events::UpdateEntityPosition,
+            id,
+            update_entity_position_handler,
+        )
     }
 }
 
