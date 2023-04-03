@@ -7,3 +7,5 @@ pub mod set_render_distance;
 pub mod spawn_player;
 pub mod synchronize_player_position;
 pub mod update_entity_position;
+pub mod update_entity_position_and_rotation;
+pub mod update_entity_rotation;

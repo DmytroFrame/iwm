@@ -2,7 +2,7 @@
 pub(crate) enum Events {
     PlayerJoin,
     UpdateEntityPosition,
-    UpdateEntityPositionandRotation,
+    UpdateEntityPositionAndRotation,
     UpdateEntityRotation,
     PlayerQuit,
 }

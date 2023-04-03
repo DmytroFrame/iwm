@@ -14,6 +14,8 @@ use crate::{
             events::{
                 join_player::join_player_handler,
                 update_entity_position::update_entity_position_handler,
+                update_entity_position_and_rotation::update_entity_position_and_rotation_handler,
+                update_entity_rotation::update_entity_rotation_handler,
             },
             player_struct::Player,
         },
@@ -110,6 +112,18 @@ impl PlayerSession {
             crate::game::event::events::Events::UpdateEntityPosition,
             id,
             update_entity_position_handler,
+        );
+
+        event.add_handler(
+            crate::game::event::events::Events::UpdateEntityPositionAndRotation,
+            id,
+            update_entity_position_and_rotation_handler,
+        );
+
+        event.add_handler(
+            crate::game::event::events::Events::UpdateEntityRotation,
+            id,
+            update_entity_rotation_handler,
         )
     }
 }

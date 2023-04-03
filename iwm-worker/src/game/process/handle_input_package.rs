@@ -33,12 +33,21 @@ pub(super) async fn handle_input_package(
                 session.player.rotation.z,
                 session.player.on_ground,
             ) {
+                session.previous_position.x = session.player.position.x;
+                session.previous_position.y = session.player.position.y;
+                session.previous_position.z = session.player.position.z;
+
                 session.player.position.x = payload.x;
                 session.player.position.y = payload.y;
                 session.player.position.z = payload.z;
                 session.player.rotation.x = payload.yaw;
                 session.player.rotation.z = payload.pitch;
                 session.player.on_ground = payload.on_ground;
+
+                event.add_event(
+                    crate::game::event::events::Events::UpdateEntityPositionAndRotation,
+                    session.player.entity_id,
+                );
 
                 session.check_chunk_center().await;
             }
@@ -82,6 +91,11 @@ pub(super) async fn handle_input_package(
                 session.player.rotation.x = payload.x;
                 session.player.rotation.z = payload.y;
                 session.player.on_ground = payload.on_ground;
+
+                // event.add_event(
+                //     crate::game::event::events::Events::UpdateEntityRotation,
+                //     session.player.entity_id,
+                // );
             }
         }
 

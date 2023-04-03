@@ -12,5 +12,6 @@ mod utils;
 // #[tokio::main]
 async fn main() {
     // console_subscriber::init();
+
     server::init_server(25565).await;
 }
