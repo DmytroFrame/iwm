@@ -4,7 +4,7 @@ use tokio::{sync::mpsc::Receiver, time::Instant};
 
 use crate::{
     game::{event::manager::EventMenager, online},
-    logger::Logger,
+    logger::Logger, websocket,
 };
 
 use super::{
@@ -12,6 +12,7 @@ use super::{
     process_channels::process_registration,
 };
 
+#[derive(Debug)]
 pub(crate) struct Process {
     pub players: Vec<PlayerSession>,
     // pub events: EventMenager,
@@ -57,7 +58,7 @@ impl Process {
 }
 
 pub(crate) async fn init_process(player_session: PlayerSession) {
-    let session_queue = process_registration(player_session.player.entity_id).await;
+    let session_queue: Receiver<PlayerSession> = process_registration(player_session.player.entity_id).await;
 
     let mut event = EventMenager::new();
     let mut process = Process {
@@ -84,6 +85,8 @@ pub(crate) async fn init_process(player_session: PlayerSession) {
             online::minus_online(&process.players[0].player.username).await;
             break;
         }
+
+        websocket::send_ws_message(format!("{:#?}", &process)).await;
 
         // Logger::new("Process").info(&format!("Process loop time {:?}", Instant::elapsed(&start)));
         tokio::time::sleep(Duration::from_millis(50)).await;

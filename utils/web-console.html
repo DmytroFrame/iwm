@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Web console</title>
+    <style>
+      #data-body {
+        background-color: gainsboro;
+        min-height: 200px;
+      }
+    </style>
+  </head>
+  <body>
+    <p>Data received:</p>
+    <pre id="data-body"></pre>
+
+    <script>
+      const socket = new WebSocket("ws://127.0.0.1:3000");
+
+      socket.onopen = function (event) {
+        console.log("WebSocket connection opened");
+      };
+
+      socket.onmessage = function (event) {
+        const data = event.data;
+        const bodyElement = document.getElementById("data-body");
+        bodyElement.innerHTML = data;
+      };
+
+      socket.onclose = function (event) {
+        console.log("WebSocket connection closed");
+      };
+    </script>
+  </body>
+</html>

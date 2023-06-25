@@ -13,7 +13,7 @@ pub(crate) async fn process_registration(id: i32) -> Receiver<PlayerSession> {
 }
 
 pub(crate) async fn send_session_to_process(id: i32, session: PlayerSession) {
-    PROCESS_CHANNELS
+    let _ = PROCESS_CHANNELS
         .lock()
         .await
         .get(&id)
